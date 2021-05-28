@@ -2,7 +2,7 @@
 Tool to import from the official list of awarded French national decorations to Wikidata.
 
 ### Qu'est-ce que decret-decoration-wikidata ?
-decret-decoration-wikidata est un outil d'importation qui facilite le renseignement des décorations françaises (Légion d'honneur et Ordre national du Mérite) sur wikidata à partir du décret de nomination.
+decret-decoration-wikidata est un outil d'importation qui facilite le renseignement des décorations françaises (Légion d'honneur et Ordre national du Mérite) sur Wikidata à partir du décret de nomination.
 
 Il permet d'afficher sur une copie locale du décret :
 * Les personnes existantes sur wikidata qui sont susceptibles de correspondre aux personnes listées dans le décret.
@@ -21,7 +21,7 @@ Il permet d'afficher sur une copie locale du décret :
 * Renseignez les quelques questions posées.
 * Attendez... (Compter ~20 minutes pour 1000 personnes).
 * Ouvrez out.html : les personnes déjà listées sur wikidata sont apparues.
-* Si une décoration n'est pas encore renseignée sur wikidata (<b>Attention aux homonymes ! Veillez à avoir un esprit critique</b>), cliquez sur le bouton correspondant.
+* Si une décoration n'est pas encore renseignée sur wikidata (<b>Attention aux homonymes ! Veillez à avoir un esprit critique</b>), cliquez sur le bouton correspondant. Note : Aucune donnée n'est envoyée à Wikidata.
 * Allez tout en bas du fichier out.html pour récupérer le texte qui sera à importer dans QuickStatements (outil d'import rapide pour wikidata).
 ---
 
