@@ -8,12 +8,7 @@ Il permet d'afficher sur une copie locale du décret :
 * Les personnes existantes sur wikidata qui sont susceptibles de correspondre aux personnes listées dans le décret.
 * Des boutons pour ajouter sur wikidata (via QuickStatement) la décoration attribuée par le décret.
 
-<a href="doc/in.png"><img src="doc/in_400px.png"></a>
-.. image:: doc/in_400px.png
-    :target: doc/in.png
-==>
-.. image:: doc/out_400px.png
-    :target: doc/out.png
+<a href="doc/in.png"><img src="doc/in_400px.png"></a> ==> <a href="doc/out.png"><img src="doc/out_400px.png"></a>
 
 ---
 
