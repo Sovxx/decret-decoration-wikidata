@@ -1,5 +1,5 @@
 # decret-decoration-wikidata
-Import tool from official list of awarded French national decorations to Wikidata
+Tool to import from the official list of awarded French national decorations to Wikidata.
 
 ### Qu'est-ce que decret-decoration-wikidata ?
 decret-decoration-wikidata est un outil d'importation qui facilite le renseignement des décorations françaises (Légion d'honneur et Ordre National du Mérite) sur wikidata à partir du décret de nomination.
@@ -15,7 +15,7 @@ Il permet d'afficher sur une copie locale du décret :
 ### Utilisation
 * Installez Python3.
 * Téléchargez decret-decoration-wikidata (bouton vert "Code" en haut à droite et "Download ZIP") et dézippez-le.
-* Téléchargez la page du décret à traiter (Par exemple [https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000043522969]) et enregistrer cette page dans le même dossier que decret-decoration-wikidata.
+* Téléchargez la page du décret à traiter (Par exemple https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000043522969) et enregistrer cette page dans le même dossier que decret-decoration-wikidata.
 * Ouvrez un terminal (invite de commande) dans le dossier (Par exemple ``cd C:/xxx/xxx``).
 * Lancez le programme avec la commande ``python3 decret-decoration-wikidata``.
 * Renseignez les quelques questions demandées.
@@ -27,4 +27,4 @@ Il permet d'afficher sur une copie locale du décret :
 ---
 
 ### Bug
-Vous pouvez signaler les bugs dans l'onglet Issue ou me laisser un message sur ma page wikidata [https://www.wikidata.org/wiki/User:Sovxx]
+Vous pouvez signaler les bugs dans l'onglet Issue ou me laisser un message sur ma page wikidata https://www.wikidata.org/wiki/User:Sovxx
