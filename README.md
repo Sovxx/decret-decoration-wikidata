@@ -15,15 +15,14 @@ Il permet d'afficher sur une copie locale du décret :
 ### Utilisation
 * Installez Python3.
 * Téléchargez decret-decoration-wikidata (bouton vert "Code" en haut à droite et "Download ZIP") et dézippez-le.
-* Téléchargez la page du décret à traiter (Par exemple https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000043522969) et enregistrer cette page dans le même dossier que decret-decoration-wikidata.
+* Téléchargez la page du décret à traiter (Par exemple https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000043522969) et enregistrez cette page dans le même dossier que decret-decoration-wikidata.
 * Ouvrez un terminal (invite de commande) dans le dossier (Par exemple ``cd C:/xxx/xxx``).
 * Lancez le programme avec la commande ``python3 decret-decoration-wikidata``.
 * Renseignez les quelques questions posées.
 * Attendez...(compter ~20 minutes pour 1000 personnes).
 * Ouvrez out.html : les personnes déjà listées sur wikidata sont apparues.
-* Si une décoration n'est pas encore renseignée sur wikidata (<b>attention aux homonymes !!</b>), cliquez sur le bouton correspondant.
+* Si une décoration n'est pas encore renseignée sur wikidata (<b>attention aux homonymes ! Veillez à avoir un esprit critique</b>), cliquez sur le bouton correspondant.
 * Allez tout en bas du fichier out.html pour récupérer le texte qui sera à importer dans QuickStatements (outil d'import rapide pour wikidata).
-
 ---
 
 ### Bug
