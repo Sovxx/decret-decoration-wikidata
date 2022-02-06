@@ -7,6 +7,13 @@ import pprint #nécessaire pour pprint (affichage des données JSON sur plusieur
 import re
 from datetime import datetime
 
+def definition_NOR(filedata):
+    NOR = filedata[filedata.find("NOR :")+6:filedata.find("NOR :")+6+12] #récupère "PRER2104806D" dans "NOR : PRER2104806D"
+    print("Identifiant NOR du décret ?   Par défaut (reconnu dans in.html) :", NOR)
+    NOR = input() or NOR
+    print("NOR =", NOR)
+    return NOR
+
 def check_date(date_a_checker):
     if len(date_a_checker) != 10: return "date KO ; len != 10"
     try:
@@ -18,11 +25,69 @@ def check_date(date_a_checker):
         return "date KO ; erreur de type"
     return "date valide"
 
-url = "https://www.wikidata.org/w/api.php"
+def definition_date_decret_ISO_wiki(filedata):
+    date_decret = "[non trouvé]"
+    if filedata.find("portant nomination") != -1:
+        date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant nomination")-1]
+    if filedata.find("portant promotion") != -1:
+        date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant promotion")-1]
+    if filedata.find("portant élévation") != -1:
+        date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant élévation")-1]
+    print("date_decret =", date_decret)
+    date_decret_ISO = "[non trouvé]"
+    if date_decret != "[non trouvé]":
+        annee_decret = date_decret[len(date_decret)-4:]
+        print("annee_decret =", annee_decret)
+        jour_decret = date_decret[:date_decret.find(" ")]
+        if jour_decret == "1er": jour_decret = 1
+        if len(str(jour_decret)) == 1 : jour_decret = "0" + str(jour_decret)
+        print("jour_decret =", jour_decret)
+        mois_decret = date_decret[date_decret.find(" ")+1:len(date_decret)-5]
+        print("mois_decret =", mois_decret)
+        if mois_decret == "janvier": date_decret_ISO = str(annee_decret) + "-01-" + str(jour_decret)
+        elif mois_decret == "février": date_decret_ISO = str(annee_decret) + "-02-" + str(jour_decret)
+        elif mois_decret == "mars": date_decret_ISO = str(annee_decret) + "-03-" + str(jour_decret)
+        elif mois_decret == "avril": date_decret_ISO = str(annee_decret) + "-04-" + str(jour_decret)
+        elif mois_decret == "mai": date_decret_ISO = str(annee_decret) + "-05-" + str(jour_decret)
+        elif mois_decret == "juin": date_decret_ISO = str(annee_decret) + "-06-" + str(jour_decret)
+        elif mois_decret == "juillet": date_decret_ISO = str(annee_decret) + "-07-" + str(jour_decret)
+        elif mois_decret == "août": date_decret_ISO = str(annee_decret) + "-08-" + str(jour_decret)
+        elif mois_decret == "septembre": date_decret_ISO = str(annee_decret) + "-09-" + str(jour_decret)
+        elif mois_decret == "octobre": date_decret_ISO = str(annee_decret) + "-10-" + str(jour_decret)
+        elif mois_decret == "novembre": date_decret_ISO = str(annee_decret) + "-11-" + str(jour_decret)
+        elif mois_decret == "décembre": date_decret_ISO = str(annee_decret) + "-12-" + str(jour_decret)
+        else: date_decret_ISO = "[format non reconnu]"
+    print("date_decret_ISO =", date_decret_ISO)
+    print("Date du décret au format AAAA-MM-JJ ?   Par défaut (reconnu dans in.html) :", date_decret_ISO)
+    date_decret_ISO = input() or date_decret_ISO
+    print("date_decret_ISO =", date_decret_ISO)
+    print("check_date(date_decret_ISO) =", check_date(date_decret_ISO))
+    if (check_date(date_decret_ISO) != "date valide"): raise SystemExit("Erreur : date du décret invalide, pas au format AAAA-MM-JJ ; réessayez en la tapant manuellement")
+    date_decret_ISO_wiki = "+" + date_decret_ISO + "T00:00:00Z/11"
+    print("date_decret_ISO_wiki =", date_decret_ISO_wiki)
+    return date_decret_ISO_wiki
 
-award_received = 0 # pour balayer les différents P166 de la personne
-award_received_total = 0 # nombre de P166 de la personne
-decoration = 0 # pour balayer les différentes décorations (listées ci-dessous) possibles
+def definition_ordre(filedata):
+    ordre = "[non trouvé]"
+    if filedata.find("Grande chancellerie de la Légion d'honneur") != -1: ordre = "LH"
+    if filedata.find("Chancellerie de l'ordre national du Mérite") != -1: ordre = "ONM"
+    if filedata.find("Chancellerie de l’ordre national du Mérite") != -1: ordre = "ONM" # apostrophe différente de celle de la ligne du dessus !
+    if filedata.find("Grande chancellerie de la Légion d'honneur") == -1  and filedata.find("Chancellerie de l'ordre national du Mérite") == -1:
+        if filedata.find("exécution par le chancelier de l'ordre national du Mérite") != -1: ordre = "ONM"
+        if filedata.find("et de grand officier de l'ordre national du Mérite") != -1: ordre = "ONM"
+        if filedata.find("exécution par le grand chancelier de l'ordre national de la Légion d'honneur") != -1: ordre ="LH"
+        if filedata.find("exécution par le grand chancelier de la Légion d'honneur") != -1: ordre ="LH"
+        if filedata.find("et de grand officier de l'ordre national du Mérite") != -1: ordre = "ONM"
+        if filedata.find("portant élévation dans l'ordre national de la Légion d'honneur") != -1: ordre ="LH"
+        if filedata.find("ORDRE NATIONAL DU MERITE Décret du") != -1: ordre = "ONM"
+        if filedata.find("sont élevés dans l'ordre national du Mérite") != -1: ordre = "ONM"
+        if filedata.find("est élevé dans l'ordre national du Mérite") != -1: ordre = "ONM"
+    print("Ordre ? LH ou ONM ?   Par défaut (reconnu dans in.html) :", ordre)
+    ordre = input() or ordre
+    print("ordre =", ordre)
+    if (ordre != "LH") and (ordre != "ONM"): raise SystemExit("Erreur : ordre doit être LH (Légion d'Honneur) ou ONM (Ordre National du Mérite)")
+    return ordre
+
 decoration_nom = ["Chevalier ONM", "Officier ONM", "Commandeur ONM", "Grand Officier ONM", "Grand'Croix ONM", "ONM",\
 "Chevalier LH", "Officier LH", "Commandeur LH", "Grand Officier LH", "Grand'Croix LH", "LH"]
 decoration_total = len(decoration_nom)
@@ -40,112 +105,36 @@ decoration_img = ["https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Ord
 "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Legion_Honneur_GO_ribbon.svg/218px-Legion_Honneur_GO_ribbon.svg.png", \
 "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Legion_Honneur_GC_ribbon.svg/218px-Legion_Honneur_GC_ribbon.svg.png", \
 "https://upload.wikimedia.org/wikipedia/commons/8/81/De_la_legion_d_honneur_Recto.png"]
+
+def mise_en_forme_titres(filedata, ordre):
+    if ordre == "ONM":
+        filedata = filedata.replace("Au grade de chevalier", "Au grade de chevalier <img src=\"" + decoration_img[0] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade d'officier", "Au grade d'officier <img src=\"" + decoration_img[1] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade d’officier", "Au grade d’officier <img src=\"" + decoration_img[1] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("Au grade de commandeur", "Au grade de commandeur <img src=\"" + decoration_img[2] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("A la dignité de grand officier", "A la dignité de grand officier <img src=\"" + decoration_img[3] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("A la dignité de grand'croix", "A la dignité de grand'croix <img src=\"" + decoration_img[4] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+    if ordre == "LH":
+        filedata = filedata.replace("Au grade de chevalier", "Au grade de chevalier <img src=\"" + decoration_img[6] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade d'officier", "Au grade d'officier <img src=\"" + decoration_img[7] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade d’officier", "Au grade d’officier <img src=\"" + decoration_img[7] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("Au grade de commandeur", "Au grade de commandeur <img src=\"" + decoration_img[8] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("A la dignité de grand officier", "A la dignité de grand officier <img src=\"" + decoration_img[9] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("A la dignité de grand'croix", "A la dignité de grand'croix <img src=\"" + decoration_img[10] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+    return filedata
+
+url = "https://www.wikidata.org/w/api.php"
+
+award_received = 0 # pour balayer les différents P166 de la personne
+award_received_total = 0 # nombre de P166 de la personne
+decoration = 0 # pour balayer les différentes décorations (listées ci-dessous) possibles
 decoration_obtenue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 decoration_date = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-try:
-    with open("in.html", 'r') as file:
-        filedata = file.read()
-except IOError:
-    print("Erreur: Enregistrez une page de décret depuis Légifrance sous le nom \"in.html\" dans le dossier du programme.")
-
-print("RECHERCHE DES INFOS DE BASE DU DECRET...")
-
-NOR = filedata[filedata.find("NOR :")+6:filedata.find("NOR :")+6+12] #récupère "PRER2104806D" dans "NOR : PRER2104806D"
-print("Identifiant NOR du décret ?   Par défaut (reconnu dans in.html) :", NOR)
-NOR = input() or NOR
-print("NOR =", NOR)
-
-date_decret = "[non trouvé]"
-if filedata.find("portant nomination") != -1:
-    date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant nomination")-1]
-if filedata.find("portant promotion") != -1:
-    date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant promotion")-1]
-if filedata.find("portant élévation") != -1:
-    date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant élévation")-1]
-print("date_decret =", date_decret)
-
-date_decret_ISO = "[non trouvé]"
-if date_decret != "[non trouvé]":
-    annee_decret = date_decret[len(date_decret)-4:]
-    print("annee_decret =", annee_decret)
-    jour_decret = date_decret[:date_decret.find(" ")]
-    if jour_decret == "1er": jour_decret = 1
-    if len(str(jour_decret)) == 1 : jour_decret = "0" + str(jour_decret)
-    print("jour_decret =", jour_decret)
-    mois_decret = date_decret[date_decret.find(" ")+1:len(date_decret)-5]
-    print("mois_decret =", mois_decret)
-    if mois_decret == "janvier": date_decret_ISO = str(annee_decret) + "-01-" + str(jour_decret)
-    elif mois_decret == "février": date_decret_ISO = str(annee_decret) + "-02-" + str(jour_decret)
-    elif mois_decret == "mars": date_decret_ISO = str(annee_decret) + "-03-" + str(jour_decret)
-    elif mois_decret == "avril": date_decret_ISO = str(annee_decret) + "-04-" + str(jour_decret)
-    elif mois_decret == "mai": date_decret_ISO = str(annee_decret) + "-05-" + str(jour_decret)
-    elif mois_decret == "juin": date_decret_ISO = str(annee_decret) + "-06-" + str(jour_decret)
-    elif mois_decret == "juillet": date_decret_ISO = str(annee_decret) + "-07-" + str(jour_decret)
-    elif mois_decret == "août": date_decret_ISO = str(annee_decret) + "-08-" + str(jour_decret)
-    elif mois_decret == "septembre": date_decret_ISO = str(annee_decret) + "-09-" + str(jour_decret)
-    elif mois_decret == "octobre": date_decret_ISO = str(annee_decret) + "-10-" + str(jour_decret)
-    elif mois_decret == "novembre": date_decret_ISO = str(annee_decret) + "-11-" + str(jour_decret)
-    elif mois_decret == "décembre": date_decret_ISO = str(annee_decret) + "-12-" + str(jour_decret)
-    else: date_decret_ISO = "[format non reconnu]"
-print("date_decret_ISO =", date_decret_ISO)
-print("Date du décret au format AAAA-MM-JJ ?   Par défaut (reconnu dans in.html) :", date_decret_ISO)
-date_decret_ISO = input() or date_decret_ISO
-print("date_decret_ISO =", date_decret_ISO)
-print("check_date(date_decret_ISO) =", check_date(date_decret_ISO))
-if (check_date(date_decret_ISO) != "date valide"): raise SystemExit("Erreur : date du décret invalide, pas au format AAAA-MM-JJ ; réessayez en la tapant manuellement")
-date_decret_ISO_wiki = "+" + date_decret_ISO + "T00:00:00Z/11"
-print("date_decret_ISO_wiki =", date_decret_ISO_wiki)
-
-ordre = "[non trouvé]"
-#ordre_ligne_nomination = filedata[filedata.find("nomination"):filedata.find("nomination")+1000]
-#print("ordre_ligne_nomination =", ordre_ligne_nomination)
-#ordre_ligne_promotion = filedata[filedata.find("promotion"):filedata.find("promotion")+1000]
-#print("ordre_ligne_promotion =", ordre_ligne_promotion)
-#ordre_ligne_chancellerie = filedata[filedata.find("Chancellerie"):filedata.find("Chancellerie")+1000]
-#print("ordre_ligne_chancellerie =", ordre_ligne_chancellerie)
-#if filedata[ordre_ligne_nominationfiledata.find("ordre"):filedata.find("ordre")+24] == "ordre national du Mérite" or "ordre national du mérite":
-if filedata.find("Grande chancellerie de la Légion d'honneur") != -1: ordre = "LH"
-if filedata.find("Chancellerie de l'ordre national du Mérite") != -1: ordre = "ONM"
-if filedata.find("Chancellerie de l’ordre national du Mérite") != -1: ordre = "ONM" # apostrophe différente de celle de la ligne du dessus !
-if filedata.find("Grande chancellerie de la Légion d'honneur") == -1  and filedata.find("Chancellerie de l'ordre national du Mérite") == -1:
-    if filedata.find("exécution par le chancelier de l'ordre national du Mérite") != -1: ordre = "ONM"
-    if filedata.find("et de grand officier de l'ordre national du Mérite") != -1: ordre = "ONM"
-    if filedata.find("exécution par le grand chancelier de l'ordre national de la Légion d'honneur") != -1: ordre ="LH"
-    if filedata.find("exécution par le grand chancelier de la Légion d'honneur") != -1: ordre ="LH"
-    if filedata.find("et de grand officier de l'ordre national du Mérite") != -1: ordre = "ONM"
-    if filedata.find("portant élévation dans l'ordre national de la Légion d'honneur") != -1: ordre ="LH"
-    if filedata.find("ORDRE NATIONAL DU MERITE Décret du") != -1: ordre = "ONM"
-    if filedata.find("sont élevés dans l'ordre national du Mérite") != -1: ordre = "ONM"
-    if filedata.find("est élevé dans l'ordre national du Mérite") != -1: ordre = "ONM"
-print("Ordre ? LH ou ONM ?   Par défaut (reconnu dans in.html) :", ordre)
-ordre = input() or ordre
-print("ordre =", ordre)
-if (ordre != "LH") and (ordre != "ONM"): raise SystemExit("Erreur : ordre doit être LH (Légion d'Honneur) ou ONM (Ordre National du Mérite)")
-
-print("MISE EN FORME DES TITRES DU DECRET...")
-if ordre == "ONM":
-    filedata = filedata.replace("Au grade de chevalier", "Au grade de chevalier <img src=\"" + decoration_img[0] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-    filedata = filedata.replace("Au grade d'officier", "Au grade d'officier <img src=\"" + decoration_img[1] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-    filedata = filedata.replace("Au grade d’officier", "Au grade d’officier <img src=\"" + decoration_img[1] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
-    filedata = filedata.replace("Au grade de commandeur", "Au grade de commandeur <img src=\"" + decoration_img[2] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-    filedata = filedata.replace("A la dignité de grand officier", "A la dignité de grand officier <img src=\"" + decoration_img[3] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-    filedata = filedata.replace("A la dignité de grand'croix", "A la dignité de grand'croix <img src=\"" + decoration_img[4] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-if ordre == "LH":
-    filedata = filedata.replace("Au grade de chevalier", "Au grade de chevalier <img src=\"" + decoration_img[6] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-    filedata = filedata.replace("Au grade d'officier", "Au grade d'officier <img src=\"" + decoration_img[7] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-    filedata = filedata.replace("Au grade d’officier", "Au grade d’officier <img src=\"" + decoration_img[7] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
-    filedata = filedata.replace("Au grade de commandeur", "Au grade de commandeur <img src=\"" + decoration_img[8] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-    filedata = filedata.replace("A la dignité de grand officier", "A la dignité de grand officier <img src=\"" + decoration_img[9] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-    filedata = filedata.replace("A la dignité de grand'croix", "A la dignité de grand'croix <img src=\"" + decoration_img[10] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-
-def traitement():
+def traitement(NOR, date_decret_ISO_wiki):
     global rang_personne
     global filedata
-    global date_decret_ISO_wiki
-    global NOR
     offset = 0 # pour décaler le texte après la 1ère décoration de la 1ère personne
-    #while rang_personne < 10:
     while rang_personne < len(xxx):
         print("rang_personne =", rang_personne)
         print("RECHERCHE ET FORMATAGE DU NOM DANS LE DECRET...")
@@ -185,12 +174,11 @@ def traitement():
         print("personne_listee =", personne_listee) #personne_listee = Jeanne Dupont
 
         print("RECHERCHE DE LA PERSONNE SUR WIKIDATA...")
-        query = personne_listee
         params1 = {
         "action" : "wbsearchentities",
         "language" : "fr",
         "format" : "json",
-        "search" : query
+        "search" : personne_listee
         }
         data = requests.get(url,params=params1)
 
@@ -224,27 +212,6 @@ def traitement():
                 print("description =", description)
 
                 print(rang_personne, "/", rang_personne_Q, ": " + id + " : " + label + ", " + description)
-                #print(data.json()["search"][rang_personne_Q]["title"])
-                #print(data.json()["search"][rang_personne_Q]["match"]["text"])
-                #pprint.pprint(data.json())
-
-                #print("RECHERCHE SI 1ERE OCCUPATION ET 1ERE POSITION HELD SUR WIKIDATA...")   pas fonctionnel ; il faudrait continuer pour récuperer le NOM à partir de l'id de l'occupation
-                #params11 = {
-                #"action" : "wbgetclaims",
-                #"format" : "json",
-                #"entity" : id,
-                #"property" : "P106"
-                #}
-                #data11 = requests.get(url,params=params11)
-                #pprint.pprint(data11.json())
-                #params12 = {
-                #"action" : "wbgetclaims",
-                #"format" : "json",
-                #"entity" : id,
-                #"property" : "P39"
-                #}
-                #data12 = requests.get(url,params=params12)
-                #pprint.pprint(data12.json())
 
                 print("RECHERCHE DES DECORATIONS (ONM ET LH) SUR WIKIDATA...")
                 params2 = {
@@ -254,16 +221,6 @@ def traitement():
                 "property" : "P166"
                 }
                 data2 = requests.get(url,params=params2)
-                #pprint.pprint(data.json())
-                #print("-----")
-                #pprint.pprint(data2.json()["claims"]["P166"][0])
-                #print("-----")
-                #pprint.pprint(data2.json()["claims"]["P166"][0]["mainsnak"]["datavalue"]["value"]["id"])
-                #pprint.pprint(data.json()["claims"]["P166"][0]["qualifiers"]["P585"][0]["datavalue"]["value"]["time"])
-                #pprint.pprint(data.json()["claims"]["P166"][0]["qualifiers"])
-                #print("qualifiers" in data2.json()["claims"]["P166"][0])
-                #print("P585" in data.json()["claims"]["P166"][0]["qualifiers"])
-                #print("---------")
 
                 j=0
                 while j < decoration_total:
@@ -280,18 +237,13 @@ def traitement():
                 if award_received_total > 0:
                     award_received = 0
                     while award_received < award_received_total:
-                        #print("check le P166 N°", award_received, "...")
                         decoration = 0
                         while decoration < decoration_total:
                             if data2.json()["claims"]["P166"][award_received]["mainsnak"]["datavalue"]["value"]["id"] == decoration_Q[decoration]:
-                                #print(decoration_nom[decoration], "trouvé")
                                 decoration_obtenue[decoration] = 1
                                 if "qualifiers" in data2.json()["claims"]["P166"][award_received]:
-                                    #print("qualifier trouvé dans P166 N°", award_received)
                                     if "P585" in data2.json()["claims"]["P166"][award_received]["qualifiers"]:
-                                        #print("qualifier P585 trouvé dans P166 N°", award_received)
                                         decoration_date[decoration] = data2.json()["claims"]["P166"][award_received]["qualifiers"]["P585"][0]["datavalue"]["value"]["time"]
-                                        #print("date =", decoration_date[decoration])
                             decoration = decoration + 1
                         award_received = award_received + 1
                 print(decoration_nom)
@@ -306,7 +258,7 @@ def traitement():
                 "property" : "P569"
                 }
                 data3 = requests.get(url,params=params3)
-                #pprint.pprint(data3.json()["claims"]["P569"][0]["mainsnak"]["datavalue"]["value"]["time"])
+
                 try:
                     date_naissance = data3.json()["claims"]["P569"][0]["mainsnak"]["datavalue"]["value"]["time"][1:5]
                 except KeyError:
@@ -319,7 +271,7 @@ def traitement():
                 "property" : "P570"
                 }
                 data4 = requests.get(url,params=params4)
-                #pprint.pprint(data3.json()["claims"]["P570"][0]["mainsnak"]["datavalue"]["value"]["time"])
+
                 try:
                     date_deces = data4.json()["claims"]["P570"][0]["mainsnak"]["datavalue"]["value"]["time"][1:5]
                 except KeyError:
@@ -344,6 +296,7 @@ def traitement():
                 injection_str = "<style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + str(rang_personne) + "/" + str(rang_personne_Q) + \
                 " : <b><a href=\"https://www.wikidata.org/wiki/" + id + "\">" + id + " : " + \
                 label + " (" + date_naissance + "-" + date_deces + "), " + description + "</b></a>"
+
                 #ajout des boutons pour QuickStatements
                 #injection_str = injection_str + "<style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>"
                 if ordre == "LH": QS_range_bouton_decoration = [10,9,8,7,6]
@@ -351,17 +304,8 @@ def traitement():
                 for QS_compteur_bouton_decoration in QS_range_bouton_decoration:
                     injection_str = injection_str + " <form onclick=\"QS_ajout_ligne('" + id + "|P166|" + decoration_Q[QS_compteur_bouton_decoration] + "|P585|" + date_decret_ISO_wiki + "|S464|','" + NOR + "','" + id + decoration_Q[QS_compteur_bouton_decoration] + \
                     "')\"><input type=\"button\" id=\"" + id + decoration_Q[QS_compteur_bouton_decoration] + "\" value=\"" + decoration_nom[QS_compteur_bouton_decoration] + "\"></form>"
-                #ajout des éventuelles décorations existantes
-                #k = 0
-                #while k < decoration_total:
-                #    if decoration_obtenue[k] == 1:
-                #        injection_str = injection_str + "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src=\"" + decoration_img[k] + "\" width=\"50\"> &nbsp;" + "<a href=\"https://www.wikidata.org/wiki/" + id + "#P166\">" + decoration_nom[k] + "</a>"
-                #        if decoration_date[k] != 0:
-                #            date_ISO_reformatee = decoration_date[k][1:] # pour passer de +2008-09-12T00:00:00Z à 2008-09-12T00:00:00Z
-                #            date_ISO_reformatee = date_ISO_reformatee[:10] # pour passer de 2008-09-12T00:00:00 à 2008-09-12
-                #            injection_str = injection_str + " du " + date_ISO_reformatee
-                #    k = k + 1
 
+                #ajout des éventuelles décorations existantes
                 for k in [10,9,8,7,6,11,4,3,2,1,0,5]: #pour affichage des plus hautes décorations en premier
                     if decoration_obtenue[k] == 1:
                         injection_str = injection_str + "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src=\"" + decoration_img[k] + "\" width=\"50\"> &nbsp;" + "<a href=\"https://www.wikidata.org/wiki/" + id + "#P166\">" + decoration_nom[k] + "</a>"
@@ -382,8 +326,7 @@ def traitement():
 
         rang_personne = rang_personne + 1
 
-def QS_ajout_script():
-    global filedata
+def QS_ajout_script(filedata):
     filedata = filedata[:filedata.find("</html>")] + "<script language=\"Javascript\"> function QS_ajout_ligne(champ1,champ2,ID_bouton) { \
       if (document.getElementById(ID_bouton).style.backgroundColor != \"green\") { \
         var paragraph = document.getElementById(\"p\"); \
@@ -398,8 +341,23 @@ def QS_ajout_script():
     </script> \
     </p><b>Texte à utiliser dans <a href =\"https://quickstatements.toolforge.org/#/\">QuickStatements</a> pour exporter les nouvelles décorations dans Wikidata :</b> \
     <p id=\"p\"></p>" + filedata[filedata.find("</html>"):]
+    return filedata
 
 
+print("OUVERTURE DU FICHIER \"in.html\"...")
+try:
+    with open("in.html", 'r') as file:
+        filedata = file.read()
+except IOError:
+    raise SystemExit("Erreur: Enregistrez une page de décret depuis Légifrance sous le nom \"in.html\" dans le dossier du programme.")
+
+print("RECHERCHE DES INFOS DE BASE DU DECRET...")
+NOR = definition_NOR(filedata)
+date_decret_ISO_wiki = definition_date_decret_ISO_wiki(filedata)
+ordre = definition_ordre(filedata)
+
+print("MISE EN FORME DES TITRES DU DECRET...")
+filedata = mise_en_forme_titres(filedata, ordre)
 
 print("RECUPERATION DES LIGNES ASSOCIEES ASSOCIEES A CHAQUE PERSONNE...")
 prefixes = ["M\. ", "Mme ","M\.\&nbsp\;", "Mme\&nbsp\;"]
@@ -411,12 +369,14 @@ for prefixe in prefixes:
         xxx.append(m.start())
         print(xxx[i])
         i = i + 1
-    traitement()
+    traitement(NOR, date_decret_ISO_wiki)
 
+print("AJOUT DU CHAMP QUICKSTATEMENTS A LA FIN DU FICHIER...")
+filedata = QS_ajout_script(filedata)
 
-QS_ajout_script()
-
+print("ENREGISTREMENT DU FICHIER \"out.html\"...")
 with open("out.html", 'w') as file:
     file.write(filedata)
 
+print("==================================================")
 print("TRAITEMENT TERMINE. OUVREZ LE FICHIER \"out.html\".")
