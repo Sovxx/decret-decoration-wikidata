@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+#python : supérieure ou égale à v3.6
 import requests
 #import json #nécessaire pour pprint (affichage des données JSON sur plusieurs lignes)
 import pprint #nécessaire pour pprint (affichage des données JSON sur plusieurs lignes)
 import re
 from datetime import datetime
 
+debug = False
+
 def definition_NOR(filedata):
     NOR = filedata[filedata.find("NOR :")+6:filedata.find("NOR :")+6+12] #récupère "PRER2104806D" dans "NOR : PRER2104806D"
-    print("Identifiant NOR du décret ?   Par défaut (reconnu dans in.html) :", NOR)
+    print(f"Identifiant NOR du décret ?   Par défaut (reconnu dans in.html) : {NOR}")
     NOR = input() or NOR
-    print("NOR =", NOR)
+    print(f"NOR = {NOR}")
     return NOR
 
 def check_date(date_a_checker):
@@ -27,23 +30,20 @@ def check_date(date_a_checker):
 
 def definition_date_decret_ISO_wiki(filedata):
     date_decret = "[non trouvé]"
-    if filedata.find("portant nomination") != -1:
-        date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant nomination")-1]
-    if filedata.find("portant promotion") != -1:
-        date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant promotion")-1]
-    if filedata.find("portant élévation") != -1:
-        date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant élévation")-1]
-    print("date_decret =", date_decret)
+    if filedata.find("portant nomination") != -1: date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant nomination")-1]
+    if filedata.find("portant promotion") != -1: date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant promotion")-1]
+    if filedata.find("portant élévation") != -1: date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant élévation")-1]
+    if debug: print(f"date_decret = {date_decret}")
     date_decret_ISO = "[non trouvé]"
     if date_decret != "[non trouvé]":
         annee_decret = date_decret[len(date_decret)-4:]
-        print("annee_decret =", annee_decret)
+        if debug: print(f"annee_decret = {annee_decret}")
         jour_decret = date_decret[:date_decret.find(" ")]
         if jour_decret == "1er": jour_decret = 1
         if len(str(jour_decret)) == 1 : jour_decret = "0" + str(jour_decret)
-        print("jour_decret =", jour_decret)
+        if debug: print(f"jour_decret = {jour_decret}")
         mois_decret = date_decret[date_decret.find(" ")+1:len(date_decret)-5]
-        print("mois_decret =", mois_decret)
+        if debug: print(f"mois_decret = {mois_decret}")
         if mois_decret == "janvier": date_decret_ISO = str(annee_decret) + "-01-" + str(jour_decret)
         elif mois_decret == "février": date_decret_ISO = str(annee_decret) + "-02-" + str(jour_decret)
         elif mois_decret == "mars": date_decret_ISO = str(annee_decret) + "-03-" + str(jour_decret)
@@ -57,14 +57,14 @@ def definition_date_decret_ISO_wiki(filedata):
         elif mois_decret == "novembre": date_decret_ISO = str(annee_decret) + "-11-" + str(jour_decret)
         elif mois_decret == "décembre": date_decret_ISO = str(annee_decret) + "-12-" + str(jour_decret)
         else: date_decret_ISO = "[format non reconnu]"
-    print("date_decret_ISO =", date_decret_ISO)
-    print("Date du décret au format AAAA-MM-JJ ?   Par défaut (reconnu dans in.html) :", date_decret_ISO)
+    if debug: print(f"date_decret_ISO = {date_decret_ISO}")
+    print(f"Date du décret au format AAAA-MM-JJ ?   Par défaut (reconnu dans in.html) : {date_decret_ISO}")
     date_decret_ISO = input() or date_decret_ISO
-    print("date_decret_ISO =", date_decret_ISO)
-    print("check_date(date_decret_ISO) =", check_date(date_decret_ISO))
-    if (check_date(date_decret_ISO) != "date valide"): raise SystemExit("Erreur : date du décret invalide, pas au format AAAA-MM-JJ ; réessayez en la tapant manuellement")
+    print(f"date_decret_ISO = {date_decret_ISO}")
+    if debug: print(f"check_date(date_decret_ISO) = {check_date(date_decret_ISO)}")
+    if check_date(date_decret_ISO) != "date valide": raise SystemExit("Erreur : date du décret invalide, pas au format AAAA-MM-JJ ; réessayez en la tapant manuellement")
     date_decret_ISO_wiki = "+" + date_decret_ISO + "T00:00:00Z/11"
-    print("date_decret_ISO_wiki =", date_decret_ISO_wiki)
+    if debug: print(f"date_decret_ISO_wiki = {date_decret_ISO_wiki}")
     return date_decret_ISO_wiki
 
 def definition_ordre(filedata):
@@ -89,22 +89,22 @@ def definition_ordre(filedata):
     return ordre
 
 decoration_nom = ["Chevalier ONM", "Officier ONM", "Commandeur ONM", "Grand Officier ONM", "Grand'Croix ONM", "ONM",\
-"Chevalier LH", "Officier LH", "Commandeur LH", "Grand Officier LH", "Grand'Croix LH", "LH"]
+    "Chevalier LH", "Officier LH", "Commandeur LH", "Grand Officier LH", "Grand'Croix LH", "LH"]
 decoration_total = len(decoration_nom)
 decoration_Q = ["Q13422138", "Q13422140", "Q13422141", "Q13422142", "Q13422143", "Q652962", \
-"Q10855271", "Q10855195", "Q10855212", "Q10855216", "Q10855226", "Q163700"]
+    "Q10855271", "Q10855195", "Q10855212", "Q10855216", "Q10855226", "Q163700"]
 decoration_img = ["https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Ordre_national_du_Merite_Chevalier_ribbon.svg/218px-Ordre_national_du_Merite_Chevalier_ribbon.svg.png", \
-"https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Ordre_national_du_Merite_Officier_ribbon.svg/218px-Ordre_national_du_Merite_Officier_ribbon.svg.png", \
-"https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Ordre_national_du_Merite_Commandeur_ribbon.svg/218px-Ordre_national_du_Merite_Commandeur_ribbon.svg.png", \
-"https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Ordre_national_du_Merite_GO_ribbon.svg/218px-Ordre_national_du_Merite_GO_ribbon.svg.png", \
-"https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Ordre_national_du_Merite_GC_ribbon.svg/218px-Ordre_national_du_Merite_GC_ribbon.svg.png", \
-"https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Ordre_national_du_merite_chevalier_FRANCE.jpg/86px-Ordre_national_du_merite_chevalier_FRANCE.jpg", \
-"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Legion_Honneur_Chevalier_ribbon.svg/218px-Legion_Honneur_Chevalier_ribbon.svg.png", \
-"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Legion_Honneur_Officier_ribbon.svg/218px-Legion_Honneur_Officier_ribbon.svg.png", \
-"https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Legion_Honneur_Commandeur_ribbon.svg/218px-Legion_Honneur_Commandeur_ribbon.svg.png", \
-"https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Legion_Honneur_GO_ribbon.svg/218px-Legion_Honneur_GO_ribbon.svg.png", \
-"https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Legion_Honneur_GC_ribbon.svg/218px-Legion_Honneur_GC_ribbon.svg.png", \
-"https://upload.wikimedia.org/wikipedia/commons/8/81/De_la_legion_d_honneur_Recto.png"]
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Ordre_national_du_Merite_Officier_ribbon.svg/218px-Ordre_national_du_Merite_Officier_ribbon.svg.png", \
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Ordre_national_du_Merite_Commandeur_ribbon.svg/218px-Ordre_national_du_Merite_Commandeur_ribbon.svg.png", \
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Ordre_national_du_Merite_GO_ribbon.svg/218px-Ordre_national_du_Merite_GO_ribbon.svg.png", \
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Ordre_national_du_Merite_GC_ribbon.svg/218px-Ordre_national_du_Merite_GC_ribbon.svg.png", \
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Ordre_national_du_merite_chevalier_FRANCE.jpg/86px-Ordre_national_du_merite_chevalier_FRANCE.jpg", \
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Legion_Honneur_Chevalier_ribbon.svg/218px-Legion_Honneur_Chevalier_ribbon.svg.png", \
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Legion_Honneur_Officier_ribbon.svg/218px-Legion_Honneur_Officier_ribbon.svg.png", \
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Legion_Honneur_Commandeur_ribbon.svg/218px-Legion_Honneur_Commandeur_ribbon.svg.png", \
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Legion_Honneur_GO_ribbon.svg/218px-Legion_Honneur_GO_ribbon.svg.png", \
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Legion_Honneur_GC_ribbon.svg/218px-Legion_Honneur_GC_ribbon.svg.png", \
+    "https://upload.wikimedia.org/wikipedia/commons/8/81/De_la_legion_d_honneur_Recto.png"]
 
 def mise_en_forme_titres(filedata, ordre):
     if ordre == "ONM":
@@ -131,109 +131,99 @@ decoration = 0 # pour balayer les différentes décorations (listées ci-dessous
 decoration_obtenue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 decoration_date = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-def traitement(NOR, date_decret_ISO_wiki):
+def traitement(filedata, NOR, date_decret_ISO_wiki):
     global rang_personne
-    global filedata
     offset = 0 # pour décaler le texte après la 1ère décoration de la 1ère personne
     while rang_personne < len(xxx):
-        print("rang_personne =", rang_personne)
-        print("RECHERCHE ET FORMATAGE DU NOM DANS LE DECRET...")
-        print(xxx[rang_personne], "+", offset, ":", filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]) #105412 : Mme Dupont, née Durant (Jeanne, Marie, Hélène), dirigeante d'entrep
+        if debug: print(f"rang_personne = {rang_personne}")
+        if debug: print("RECHERCHE ET FORMATAGE DU NOM DANS LE DECRET...")
+        if debug: print(f"{xxx[rang_personne]} + {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}") #105412 : Mme Dupont, née Durant (Jeanne, Marie, Hélène), dirigeante d'entrep
         ouverture_parenthese = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("(")
         fermeture_parenthese = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find(")")
         prenoms = filedata[xxx[rang_personne]+offset+ouverture_parenthese+1:xxx[rang_personne]+offset+fermeture_parenthese]
-        print("prenoms =", prenoms) #prenoms = Jeanne, Marie, Hélène
-        if prenoms.find(",") == -1:
-            prenom = prenoms
+        if debug: print(f"prenoms = {prenoms}") #prenoms = Jeanne, Marie, Hélène
+        if prenoms.find(",") == -1: prenom = prenoms
         else:
             prenom = prenoms[0:prenoms.find(",")]
-        print("prenom =", prenom) #prenom = Jeanne
+        if debug: print(f"prenom = {prenom}") #prenom = Jeanne
         if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+4] == "Mme ":
-            print("titre = Mme")
+            if debug: print("titre = Mme")
             longueur_titre = 4
         if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+3] == "M. ":
-            print("titre = M.")
+            if debug: print("titre = M.")
             longueur_titre = 3
         if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+9] == "Mme&nbsp;":
-            print("titre = Mme")
+            if debug: print("titre = Mme")
             longueur_titre = 9
         if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+8] == "M.&nbsp;":
-            print("titre = M.")
+            if debug: print("titre = M.")
             longueur_titre = 8
-
-        print("longueur_titre =", longueur_titre)
+        if debug: print(f"longueur_titre = {longueur_titre}")
         nom_complet = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+ouverture_parenthese]
-        print("nom complet =", nom_complet) #Mme Dupont, née Durant
+        if debug: print(f"nom complet = {nom_complet}") #Mme Dupont, née Durant
         if nom_complet.find(",") == -1:
             nom = nom_complet
         else:
             nom = nom_complet[0:nom_complet.find(",")]
-        print("nom =", nom) #nom = Dupont
-
+        if debug: print("nom =", nom) #nom = Dupont
         personne_listee = prenom + " " + nom
-        print("personne_listee =", personne_listee) #personne_listee = Jeanne Dupont
+        if debug: print(f"personne_listee = {personne_listee}") #personne_listee = Jeanne Dupont
+        print(f"{rang_personne} : {personne_listee}")
 
-        print("RECHERCHE DE LA PERSONNE SUR WIKIDATA...")
+        if debug: print("RECHERCHE DE LA PERSONNE SUR WIKIDATA...")
         params1 = {
-        "action" : "wbsearchentities",
-        "language" : "fr",
-        "format" : "json",
-        "search" : personne_listee
+            "action" : "wbsearchentities",
+            "language" : "fr",
+            "format" : "json",
+            "search" : personne_listee
         }
-        data = requests.get(url,params=params1)
+        data1 = requests.get(url, params=params1)
 
         rang_personne_Q = 0 # pour balayer les différents homonymes
         id = ""
 
         while id != "KO":
-            print("rang_personne_Q =", rang_personne_Q)
+            if debug: print(f"rang_personne_Q = {rang_personne_Q}")
             try:
-                id = data.json()["search"][rang_personne_Q]["id"]
+                id = data1.json()["search"][rang_personne_Q]["id"]
             except KeyError:
                 id = "KO"
             except IndexError:
                 id = "KO"
-            print("id =", id)
+            if debug: print(f"id = {id}")
 
             if id != "KO":
                 try:
-                    label = data.json()["search"][rang_personne_Q]["label"]
-                except KeyError:
+                    label = data1.json()["search"][rang_personne_Q]["label"]
+                except (KeyError, IndexError):
                     label = ""
-                except IndexError:
-                    label = ""
-                print("label = ", label)
+                if debug: print(f"label = {label}")
                 try:
-                    description = data.json()["search"][rang_personne_Q]["description"]
-                except KeyError:
+                    description = data1.json()["search"][rang_personne_Q]["description"]
+                except (KeyError, IndexError):
                     description = ""
-                except IndexError:
-                    description = ""
-                print("description =", description)
+                if debug: print(f"description = {description}")
 
-                print(rang_personne, "/", rang_personne_Q, ": " + id + " : " + label + ", " + description)
+                print(f"{rang_personne} / {rang_personne_Q} : {id} : {label}, {description}")
 
-                print("RECHERCHE DES DECORATIONS (ONM ET LH) SUR WIKIDATA...")
+                if debug: print("RECHERCHE DES DECORATIONS (ONM ET LH) SUR WIKIDATA...")
                 params2 = {
-                "action" : "wbgetclaims",
-                "format" : "json",
-                "entity" : id,
-                "property" : "P166"
+                    "action" : "wbgetclaims",
+                    "format" : "json",
+                    "entity" : id,
+                    "property" : "P166"
                 }
-                data2 = requests.get(url,params=params2)
-
+                data2 = requests.get(url, params=params2)
                 j=0
                 while j < decoration_total:
                     decoration_obtenue[j] = 0
                     decoration_date[j] = 0
                     j = j + 1
-
                 try:
                     award_received_total = len(data2.json()["claims"]["P166"])
                 except KeyError:
                     award_received_total = 0
-                print("award_received_total =", award_received_total)
-
+                if debug: print(f"award_received_total = {award_received_total}")
                 if award_received_total > 0:
                     award_received = 0
                     while award_received < award_received_total:
@@ -243,67 +233,70 @@ def traitement(NOR, date_decret_ISO_wiki):
                                 decoration_obtenue[decoration] = 1
                                 if "qualifiers" in data2.json()["claims"]["P166"][award_received]:
                                     if "P585" in data2.json()["claims"]["P166"][award_received]["qualifiers"]:
-                                        decoration_date[decoration] = data2.json()["claims"]["P166"][award_received]["qualifiers"]["P585"][0]["datavalue"]["value"]["time"]
+                                        try:
+                                            decoration_date[decoration] = data2.json()["claims"]["P166"][award_received]["qualifiers"]["P585"][0]["datavalue"]["value"]["time"]
+                                        except KeyError:
+                                            decoration_date[decoration] = ""
                             decoration = decoration + 1
                         award_received = award_received + 1
-                print(decoration_nom)
-                print(decoration_obtenue)
-                print(decoration_date)
+                if debug: print(decoration_nom)
+                if debug: print(decoration_obtenue)
+                if debug: print(decoration_date)
 
-                print("RECHERCHE DES DATES DE NAISSANCE ET DE DECES SUR WIKIDATA...")
+                if debug: print("RECHERCHE DES DATES DE NAISSANCE ET DE DECES SUR WIKIDATA...")
                 params3 = {
-                "action" : "wbgetclaims",
-                "format" : "json",
-                "entity" : id,
-                "property" : "P569"
+                    "action" : "wbgetclaims",
+                    "format" : "json",
+                    "entity" : id,
+                    "property" : "P569"
                 }
-                data3 = requests.get(url,params=params3)
-
+                data3 = requests.get(url, params=params3)
                 try:
                     date_naissance = data3.json()["claims"]["P569"][0]["mainsnak"]["datavalue"]["value"]["time"][1:5]
                 except KeyError:
                     date_naissance = ""
-                print("date_naissance =", date_naissance)
-                params4 = {
-                "action" : "wbgetclaims",
-                "format" : "json",
-                "entity" : id,
-                "property" : "P570"
-                }
-                data4 = requests.get(url,params=params4)
+                if debug: print(f"date_naissance = {date_naissance}")
 
+                params4 = {
+                    "action" : "wbgetclaims",
+                    "format" : "json",
+                    "entity" : id,
+                    "property" : "P570"
+                }
+                data4 = requests.get(url, params=params4)
                 try:
                     date_deces = data4.json()["claims"]["P570"][0]["mainsnak"]["datavalue"]["value"]["time"][1:5]
                 except KeyError:
                     date_deces = ""
-                print("date_deces =", date_deces)
+                if debug: print(f"date_deces = {date_deces}")
 
-                print("AFFICHAGE DES DECORATIONS (ONM ET LH) WIKIDATA DANS LE DECRET...")
+                if debug: print("AFFICHAGE DES DECORATIONS (ONM ET LH) WIKIDATA DANS LE DECRET...")
 
-                print(xxx[rang_personne], "+", offset, ":", filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000])
+                if debug: print(f"{xxx[rang_personne]} + {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}")
                 br_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br>")
-                print("br_suivant :", br_suivant)
+                if debug: print(f"br_suivant : {br_suivant}")
                 if br_suivant == -1 : br_suivant = 10000
                 p_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("</p>")
-                print("p_suivant :", p_suivant)
+                if debug: print(f"p_suivant : {p_suivant}")
                 if p_suivant == -1 : p_suivant = 10000
                 saut_suivant = min(br_suivant, p_suivant)
-                print("saut_suivant :", saut_suivant)
+                if debug: print(f"saut_suivant : {saut_suivant}")
 
-                print("début injection")
+                if debug: print("début injection")
                 injection_index = xxx[rang_personne]+offset + saut_suivant
-                print("injection_index =", injection_index)
+                if debug: print(f"injection_index = {injection_index}")
+
+                #ajout de la personne trouvée sur wikidata
                 injection_str = "<style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + str(rang_personne) + "/" + str(rang_personne_Q) + \
-                " : <b><a href=\"https://www.wikidata.org/wiki/" + id + "\">" + id + " : " + \
+                    " : <b><a href=\"https://www.wikidata.org/wiki/" + id + "\">" + id + " : " + \
                 label + " (" + date_naissance + "-" + date_deces + "), " + description + "</b></a>"
 
                 #ajout des boutons pour QuickStatements
-                #injection_str = injection_str + "<style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>"
                 if ordre == "LH": QS_range_bouton_decoration = [10,9,8,7,6]
                 if ordre == "ONM": QS_range_bouton_decoration = [4,3,2,1,0]
                 for QS_compteur_bouton_decoration in QS_range_bouton_decoration:
                     injection_str = injection_str + " <form onclick=\"QS_ajout_ligne('" + id + "|P166|" + decoration_Q[QS_compteur_bouton_decoration] + "|P585|" + date_decret_ISO_wiki + "|S464|','" + NOR + "','" + id + decoration_Q[QS_compteur_bouton_decoration] + \
-                    "')\"><input type=\"button\" id=\"" + id + decoration_Q[QS_compteur_bouton_decoration] + "\" value=\"" + decoration_nom[QS_compteur_bouton_decoration] + "\"></form>"
+                        "')\"><input type=\"button\" id=\"" + id + decoration_Q[QS_compteur_bouton_decoration] + "\" value=\"" + decoration_nom[QS_compteur_bouton_decoration] + "\"></form>"
 
                 #ajout des éventuelles décorations existantes
                 for k in [10,9,8,7,6,11,4,3,2,1,0,5]: #pour affichage des plus hautes décorations en premier
@@ -314,11 +307,11 @@ def traitement(NOR, date_decret_ISO_wiki):
                             date_ISO_reformatee = date_ISO_reformatee[:10] # pour passer de 2008-09-12T00:00:00 à 2008-09-12
                             injection_str = injection_str + " du " + date_ISO_reformatee
 
-                print("injection_str =", injection_str)
+                if debug: print(f"injection_str = {injection_str}")
                 filedata = filedata[:injection_index] + injection_str + filedata[injection_index:]
                 offset = offset + len(injection_str)
-                print("offset =", offset)
-                print("fin injection")
+                if debug: print(f"offset = {offset}")
+                if debug: print("fin injection")
 
                 rang_personne_Q = rang_personne_Q + 1
 
@@ -326,21 +319,24 @@ def traitement(NOR, date_decret_ISO_wiki):
 
         rang_personne = rang_personne + 1
 
+    return filedata
+
 def QS_ajout_script(filedata):
-    filedata = filedata[:filedata.find("</html>")] + "<script language=\"Javascript\"> function QS_ajout_ligne(champ1,champ2,ID_bouton) { \
-      if (document.getElementById(ID_bouton).style.backgroundColor != \"green\") { \
-        var paragraph = document.getElementById(\"p\"); \
-        var text = document.createTextNode(champ1 + '\"' + champ2 + '\"'); \
-        paragraph.appendChild(text); \
-        var text = document.createElement(\"br\"); \
-        paragraph.appendChild(text); \
-        document.getElementById(ID_bouton).style.color = \"white\"; \
-        document.getElementById(ID_bouton).style.backgroundColor = \"green\"; \
-      } \
-    } \
-    </script> \
-    </p><b>Texte à utiliser dans <a href =\"https://quickstatements.toolforge.org/#/\">QuickStatements</a> pour exporter les nouvelles décorations dans Wikidata :</b> \
-    <p id=\"p\"></p>" + filedata[filedata.find("</html>"):]
+    filedata = filedata[:filedata.find("</html>")] + "<script language=\"Javascript\"> \
+        function QS_ajout_ligne(champ1,champ2,ID_bouton) { \
+            if (document.getElementById(ID_bouton).style.backgroundColor != \"green\") { \
+                var paragraph = document.getElementById(\"p\"); \
+                var text = document.createTextNode(champ1 + '\"' + champ2 + '\"'); \
+                paragraph.appendChild(text); \
+                var text = document.createElement(\"br\"); \
+                paragraph.appendChild(text); \
+                document.getElementById(ID_bouton).style.color = \"white\"; \
+                document.getElementById(ID_bouton).style.backgroundColor = \"green\"; \
+            } \
+        } \
+        </script> \
+        </p><b>Texte à utiliser dans <a href =\"https://quickstatements.toolforge.org/#/\">QuickStatements</a> pour exporter les nouvelles décorations dans Wikidata :</b> \
+        <p id=\"p\"></p>" + filedata[filedata.find("</html>"):]
     return filedata
 
 
@@ -359,7 +355,8 @@ ordre = definition_ordre(filedata)
 print("MISE EN FORME DES TITRES DU DECRET...")
 filedata = mise_en_forme_titres(filedata, ordre)
 
-print("RECUPERATION DES LIGNES ASSOCIEES ASSOCIEES A CHAQUE PERSONNE...")
+print("RECUPERATION DES LIGNES ASSOCIEES A CHAQUE PERSONNE...")
+print("==================================================")
 prefixes = ["M\. ", "Mme ","M\.\&nbsp\;", "Mme\&nbsp\;"]
 rang_personne = 0
 xxx = [] #tableau des chaînes de caractères correspondante aux passages du décret concernant chaque personne
@@ -367,9 +364,9 @@ i = 0
 for prefixe in prefixes:
     for m in re.finditer(prefixe, filedata):
         xxx.append(m.start())
-        print(xxx[i])
+        if debug: print(xxx[i])
         i = i + 1
-    traitement(NOR, date_decret_ISO_wiki)
+    filedata = traitement(filedata, NOR, date_decret_ISO_wiki)
 
 print("AJOUT DU CHAMP QUICKSTATEMENTS A LA FIN DU FICHIER...")
 filedata = QS_ajout_script(filedata)
