@@ -160,7 +160,7 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre):
                 if debug: print("RECHERCHE DES DATES DE NAISSANCE ET DE DECES SUR WIKIDATA...")
                 date_naissance = get_date_naissance(id)
                 date_deces = get_date_deces(id)
-                if debug: print("AFFICHAGE DES DECORATIONS (ONM ET LH) WIKIDATA DANS LE DECRET...")
+                if debug: print("INJECTION DES INFOS ET DECORATIONS (ONM ET LH) WIKIDATA DANS LE DECRET...")
                 filedata, offset = injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date)
                 rang_personne_Q = rang_personne_Q + 1
         print("-------------------------------")
@@ -305,8 +305,8 @@ def get_date_deces(id):
     return date_deces
 
 def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date):
-
     if debug: print(f"{xxx[rang_personne]} + {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}")
+    #recherche du saut suivant
     br_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br>")
     if debug: print(f"br_suivant : {br_suivant}")
     if br_suivant == -1 : br_suivant = 10000
@@ -315,23 +315,20 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,rang_personne
     if p_suivant == -1 : p_suivant = 10000
     saut_suivant = min(br_suivant, p_suivant)
     if debug: print(f"saut_suivant : {saut_suivant}")
-
+    #position d'injection
     if debug: print("début injection")
     injection_index = xxx[rang_personne] + offset + saut_suivant
     if debug: print(f"injection_index = {injection_index}")
-
     #ajout de la personne trouvée sur wikidata
     injection_str = "<style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + str(rang_personne) + "/" + str(rang_personne_Q) + \
         " : <b><a href=\"https://www.wikidata.org/wiki/" + id + "\">" + id + " : " + \
     label + " (" + date_naissance + "-" + date_deces + "), " + description + "</b></a>"
-
     #ajout des boutons pour QuickStatements
     if ordre == "LH": QS_range_bouton_decoration = [10,9,8,7,6]
     if ordre == "ONM": QS_range_bouton_decoration = [4,3,2,1,0]
     for QS_compteur_bouton_decoration in QS_range_bouton_decoration:
         injection_str = injection_str + " <form onclick=\"QS_ajout_ligne('" + id + "|P166|" + decoration_Q[QS_compteur_bouton_decoration] + "|P585|" + date_decret_ISO_wiki + "|S464|','" + NOR + "','" + id + decoration_Q[QS_compteur_bouton_decoration] + \
             "')\"><input type=\"button\" id=\"" + id + decoration_Q[QS_compteur_bouton_decoration] + "\" value=\"" + decoration_nom[QS_compteur_bouton_decoration] + "\"></form>"
-
     #ajout des éventuelles décorations existantes
     for k in [10,9,8,7,6,11,4,3,2,1,0,5]: #pour affichage des plus hautes décorations en premier
         if decoration_obtenue[k] == 1:
@@ -340,13 +337,12 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,rang_personne
                 date_ISO_reformatee = decoration_date[k][1:] # pour passer de +2008-09-12T00:00:00Z à 2008-09-12T00:00:00Z
                 date_ISO_reformatee = date_ISO_reformatee[:10] # pour passer de 2008-09-12T00:00:00 à 2008-09-12
                 injection_str = injection_str + " du " + date_ISO_reformatee
-
+    #injection dans filedata
     if debug: print(f"injection_str = {injection_str}")
     filedata = filedata[:injection_index] + injection_str + filedata[injection_index:]
     offset = offset + len(injection_str)
     if debug: print(f"offset = {offset}")
     if debug: print("fin injection")
-
     return filedata, offset
 
 def QS_ajout_script(filedata):
