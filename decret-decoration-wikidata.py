@@ -136,7 +136,7 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre):
         if debug: print(f"rang_personne = {rang_personne}")
         if debug: print("RECHERCHE ET FORMATAGE DU NOM DANS LE DECRET...")
         personne_listee = get_nom(filedata,xxx,rang_personne,offset)
-        print(f"{rang_personne} : {personne_listee}")
+        print(f"{rang_personne} / {len(xxx)} : {personne_listee}")
         if debug: print("RECHERCHE DE LA PERSONNE SUR WIKIDATA...")
         params1 = {
             "action" : "wbsearchentities",
@@ -154,12 +154,15 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre):
                 if debug: print("RECHERCHE DES LABEL ET DESCRIPTION SUR WIKIDATA...")
                 label = get_label(data1,rang_personne_Q)
                 description = get_description(data1,rang_personne_Q)
-                print(f"{rang_personne} / {rang_personne_Q} : {id} : {label}, {description}")
+                print(f"{rang_personne} / {len(xxx)} - {rang_personne_Q} : {id} : {label}, {description}")
+                description = filtre_description(description)
                 if debug: print("RECHERCHE DES DECORATIONS (ONM ET LH) SUR WIKIDATA...")
                 decoration_obtenue, decoration_date = get_decorations(id)
                 if debug: print("RECHERCHE DES DATES DE NAISSANCE ET DE DECES SUR WIKIDATA...")
                 date_naissance = get_date_naissance(id)
+                date_naissance = filtre_date_naissance(date_naissance,date_decret_ISO_wiki)
                 date_deces = get_date_deces(id)
+                date_deces = filtre_date_deces(date_deces,date_decret_ISO_wiki)
                 if debug: print("INJECTION DES INFOS ET DECORATIONS (ONM ET LH) WIKIDATA DANS LE DECRET...")
                 filedata, offset = injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date)
                 rang_personne_Q = rang_personne_Q + 1
@@ -238,6 +241,11 @@ def get_description(data1,rang_personne_Q):
     if debug: print(f"description = {description}")
     return description
 
+def filtre_description(description):
+    if description == "Wikimedia disambiguation page": description = f"<font color=\"red\">Wikimedia disambiguation page</font>"
+    if description == "page d'homonymie d'un projet Wikimédia": description = f"<font color=\"red\">page d'homonymie d'un projet Wikimédia</font>"
+    return  description
+
 def get_decorations(id):
     params2 = {
         "action" : "wbgetclaims",
@@ -289,6 +297,13 @@ def get_date_naissance(id):
     if debug: print(f"date_naissance = {date_naissance}")
     return date_naissance
 
+def filtre_date_naissance(date_naissance,date_decret_ISO_wiki):
+    if date_naissance == "": return ""
+    if int(date_naissance) < int(date_decret_ISO_wiki[1:5]) - 125: return f"<font color=\"red\">{date_naissance}</font>"
+    if int(date_naissance) > int(date_decret_ISO_wiki[1:5]) - 18: return f"<font color=\"red\">{date_naissance}</font>"
+    if int(date_naissance) > int(date_decret_ISO_wiki[1:5]) - 28: return f"<font color=\"orange\">{date_naissance}</font>"
+    return date_naissance
+
 def get_date_deces(id):
     params4 = {
         "action" : "wbgetclaims",
@@ -302,6 +317,12 @@ def get_date_deces(id):
     except KeyError:
         date_deces = ""
     if debug: print(f"date_deces = {date_deces}")
+    return date_deces
+
+def filtre_date_deces(date_deces,date_decret_ISO_wiki):
+    if date_deces == "": return ""
+    if int(date_deces) < int(date_decret_ISO_wiki[1:5]) - 2: return f"<font color=\"red\">{date_deces}</font>"
+    if int(date_deces) < int(date_decret_ISO_wiki[1:5]): return f"<font color=\"orange\">{date_deces}</font>"
     return date_deces
 
 def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date):
