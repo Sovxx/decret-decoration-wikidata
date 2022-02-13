@@ -136,6 +136,7 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre):
         if debug: print(f"rang_personne = {rang_personne}")
         if debug: print("RECHERCHE ET FORMATAGE DU NOM DANS LE DECRET...")
         personne_listee = get_nom(filedata,xxx,rang_personne,offset)
+        print(f"{rang_personne} : {personne_listee}")
         if debug: print("RECHERCHE DE LA PERSONNE SUR WIKIDATA...")
         params1 = {
             "action" : "wbsearchentities",
@@ -209,7 +210,6 @@ def get_nom(filedata,xxx,rang_personne,offset):
     if debug: print("nom =", nom) #nom = Dupont
     personne_listee = prenom + " " + nom
     if debug: print(f"personne_listee = {personne_listee}") #personne_listee = Jeanne Dupont
-    print(f"{rang_personne} : {personne_listee}")
     return personne_listee
 
 def get_id(data1,rang_personne_Q):
