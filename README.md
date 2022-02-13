@@ -13,7 +13,7 @@ Il permet d'afficher sur une copie locale du décret :
 ---
 
 ### Utilisation
-* Installez Python3 (gratuit).
+* Installez Python3 version 3.6 ou supérieure (gratuit).
 * Installez le module ``requests`` (gratuit) pour Python3.
 * Téléchargez decret-decoration-wikidata (bouton vert "Code" en haut à droite et "Download ZIP") et dézippez-le.
 * Téléchargez la page du décret à traiter (Par exemple https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000043522969) et enregistrez cette page dans le même dossier que decret-decoration-wikidata en la renommant in.html.
@@ -26,5 +26,5 @@ Il permet d'afficher sur une copie locale du décret :
 * Allez tout en bas du fichier out.html pour récupérer le texte qui sera à importer dans QuickStatements (outil d'import rapide pour Wikidata).
 ---
 
-### Bug
-Vous pouvez signaler les bugs dans l'onglet Issue ou me laisser un message sur ma page wikidata https://www.wikidata.org/wiki/User:Sovxx
+### Bugs, suggestions
+Vous pouvez signaler les bugs et suggestions dans l'onglet Issue ou me laisser un message sur ma page wikidata https://www.wikidata.org/wiki/User:Sovxx
