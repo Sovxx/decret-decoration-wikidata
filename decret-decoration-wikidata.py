@@ -108,27 +108,40 @@ def definition_ordre(filedata):
     print("Ordre ? LH ou ONM ?   Par défaut (reconnu dans in.html) :", ordre)
     ordre = input() or ordre
     print("ordre =", ordre)
-    if (ordre != "LH") and (ordre != "ONM"): raise SystemExit("Erreur : ordre doit être LH (Légion d'Honneur) ou ONM (Ordre National du Mérite)")
-    return ordre
+    if (ordre == "LH") or (ordre == "ONM"): return ordre
+    raise SystemExit("Erreur : ordre doit être LH (Légion d'Honneur) ou ONM (Ordre National du Mérite)")
+
+def definition_boutons_simplifies():
+    print("Boutons simplifiés (O/N) ?   Par défaut et recommandé : O")
+    boutons_simplifies = input() or "O"
+    if boutons_simplifies in {"O", "o", "Y", "y"}:
+        print("boutons_simplifies = True")
+        return True
+    if boutons_simplifies in {"N", "n"}:
+        print("boutons_simplifies = False")
+        return False
+    raise SystemExit("Erreur : doit être O ou N")
 
 def mise_en_forme_titres(filedata, ordre):
     if ordre == "ONM":
-        filedata = filedata.replace("Au grade de chevalier", "Au grade de chevalier <img src=\"" + decoration_img[0] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("Au grade d'officier", "Au grade d'officier <img src=\"" + decoration_img[1] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("Au grade d’officier", "Au grade d’officier <img src=\"" + decoration_img[1] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
-        filedata = filedata.replace("Au grade de commandeur", "Au grade de commandeur <img src=\"" + decoration_img[2] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("A la dignité de grand officier", "A la dignité de grand officier <img src=\"" + decoration_img[3] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("A la dignité de grand'croix", "A la dignité de grand'croix <img src=\"" + decoration_img[4] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade de chevalier", "<b>Au grade de chevalier</b> <img src=\"" + decoration_img[0] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade d'officier", "<b>Au grade d'officier</b> <img src=\"" + decoration_img[1] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade d’officier", "<b>Au grade d’officier</b> <img src=\"" + decoration_img[1] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("Au grade de commandeur", "<b>Au grade de commandeur</b> <img src=\"" + decoration_img[2] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("A la dignité de grand officier", "<b>A la dignité de grand officier</b> <img src=\"" + decoration_img[3] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("A la dignité de grand'croix", "<b>A la dignité de grand'croix</b> <img src=\"" + decoration_img[4] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("A la dignité de grand’croix", "<b>A la dignité de grand’croix</b> <img src=\"" + decoration_img[4] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
     if ordre == "LH":
-        filedata = filedata.replace("Au grade de chevalier", "Au grade de chevalier <img src=\"" + decoration_img[6] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("Au grade d'officier", "Au grade d'officier <img src=\"" + decoration_img[7] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("Au grade d’officier", "Au grade d’officier <img src=\"" + decoration_img[7] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
-        filedata = filedata.replace("Au grade de commandeur", "Au grade de commandeur <img src=\"" + decoration_img[8] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("A la dignité de grand officier", "A la dignité de grand officier <img src=\"" + decoration_img[9] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("A la dignité de grand'croix", "A la dignité de grand'croix <img src=\"" + decoration_img[10] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade de chevalier", "<b>Au grade de chevalier</b> <img src=\"" + decoration_img[6] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade d'officier", "<b>Au grade d'officier</b> <img src=\"" + decoration_img[7] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade d’officier", "<b>Au grade d’officier</b> <img src=\"" + decoration_img[7] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("Au grade de commandeur", "<b>Au grade de commandeur</b> <img src=\"" + decoration_img[8] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("A la dignité de grand officier", "<b>A la dignité de grand officier</b> <img src=\"" + decoration_img[9] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("A la dignité de grand'croix", "<b>A la dignité de grand'croix</b> <img src=\"" + decoration_img[10] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("A la dignité de grand’croix", "<b>A la dignité de grand’croix</b> <img src=\"" + decoration_img[10] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
     return filedata
 
-def traitement(filedata, NOR, date_decret_ISO_wiki, ordre):
+def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
     xxx = construction_index(filedata) # index de la position de chaque personne dans le decret
     rang_personne = 0
     offset = 0 # pour décaler le texte après la 1ère décoration de la 1ère personne
@@ -164,7 +177,7 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre):
                 date_deces = get_date_deces(id)
                 date_deces = filtre_date_deces(date_deces,date_decret_ISO_wiki)
                 if debug: print("INJECTION DES INFOS ET DECORATIONS (ONM ET LH) WIKIDATA DANS LE DECRET...")
-                filedata, offset = injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date)
+                filedata, offset = injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simplifies,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date)
                 rang_personne_Q = rang_personne_Q + 1
         print("-------------------------------")
         rang_personne = rang_personne + 1
@@ -325,7 +338,7 @@ def filtre_date_deces(date_deces,date_decret_ISO_wiki):
     if int(date_deces) < int(date_decret_ISO_wiki[1:5]): return f"<font color=\"orange\">{date_deces}</font>"
     return date_deces
 
-def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date):
+def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simplifies,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date):
     if debug: print(f"{xxx[rang_personne]} + {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}")
     #recherche du saut suivant
     br_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br>")
@@ -345,11 +358,21 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,rang_personne
         " : <b><a href=\"https://www.wikidata.org/wiki/" + id + "\">" + id + " : " + \
     label + " (" + date_naissance + "-" + date_deces + "), " + description + "</b></a>"
     #ajout des boutons pour QuickStatements
-    if ordre == "LH": QS_range_bouton_decoration = [10,9,8,7,6]
-    if ordre == "ONM": QS_range_bouton_decoration = [4,3,2,1,0]
+    if debug: print(f"injection_index avant recherche du grade en cours : {injection_index}")
+    grade_en_cours = get_grade_en_cours(filedata[0:injection_index],ordre)
+    if boutons_simplifies == True:
+        QS_range_bouton_decoration = [grade_en_cours]
+    if boutons_simplifies == False:
+        if ordre == "LH": QS_range_bouton_decoration = [10,9,8,7,6]
+        if ordre == "ONM": QS_range_bouton_decoration = [4,3,2,1,0]
     for QS_compteur_bouton_decoration in QS_range_bouton_decoration:
-        injection_str = injection_str + " <form onclick=\"QS_ajout_ligne('" + id + "|P166|" + decoration_Q[QS_compteur_bouton_decoration] + "|P585|" + date_decret_ISO_wiki + "|S464|','" + NOR + "','" + id + decoration_Q[QS_compteur_bouton_decoration] + \
-            "')\"><input type=\"button\" id=\"" + id + decoration_Q[QS_compteur_bouton_decoration] + "\" value=\"" + decoration_nom[QS_compteur_bouton_decoration] + "\"></form>"
+        bold1 = ""
+        bold2 = ""
+        if QS_compteur_bouton_decoration == grade_en_cours:
+            bold1 = "<b>"
+            bold2 = "</b>"
+        injection_str = injection_str + bold1 + " <form onclick=\"QS_ajout_ligne('" + id + "|P166|" + decoration_Q[QS_compteur_bouton_decoration] + "|P585|" + date_decret_ISO_wiki + "|S464|','" + NOR + "','" + id + decoration_Q[QS_compteur_bouton_decoration] + \
+            "')\"><input type=\"button\" id=\"" + id + decoration_Q[QS_compteur_bouton_decoration] + "\" value=\"" + decoration_nom[QS_compteur_bouton_decoration] + "\"></form>" + bold2
     #ajout des éventuelles décorations existantes
     for k in [10,9,8,7,6,11,4,3,2,1,0,5]: #pour affichage des plus hautes décorations en premier
         if decoration_obtenue[k] == 1:
@@ -365,6 +388,32 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,rang_personne
     if debug: print(f"offset = {offset}")
     if debug: print("fin injection")
     return filedata, offset
+
+def get_grade_en_cours(texte,ordre): # sert juste à mettre en gras le bouton concerné
+    if ordre == "LH": #[10,9,8,7,6]
+        rangs_precedents = {
+            10 : max(texte.rfind("A la dignité de grand'croix"),texte.rfind("A la dignité de grand’croix")),
+            9 : texte.rfind("A la dignité de grand officier"),
+            8 : texte.rfind("Au grade de commandeur"),
+            7 : max(texte.rfind("Au grade d'officier"),texte.rfind("Au grade d’officier")),
+            6 : texte.rfind("Au grade de chevalier")
+        }
+        if debug: print(rangs_precedents)
+        max_key = max(rangs_precedents, key=rangs_precedents.get)
+        if debug: print(max_key)
+        return max_key
+    if ordre == "ONM": #[4,3,2,1,0]
+        rangs_precedents = {
+            4 : max(texte.rfind("A la dignité de grand'croix"),texte.rfind("A la dignité de grand’croix")),
+            3 : texte.rfind("A la dignité de grand officier"),
+            2 : texte.rfind("Au grade de commandeur"),
+            1 : max(texte.rfind("Au grade d'officier"),texte.rfind("Au grade d’officier")),
+            0 : texte.rfind("Au grade de chevalier")
+        }
+        if debug: print(rangs_precedents)
+        max_key = max(rangs_precedents, key=rangs_precedents.get)
+        if debug: print(max_key)
+        return max_key
 
 def QS_ajout_script(filedata):
     filedata = filedata[:filedata.find("</html>")] + "<script language=\"Javascript\"> \
@@ -397,13 +446,14 @@ def main():
     NOR = definition_NOR(filedata)
     date_decret_ISO_wiki = definition_date_decret_ISO_wiki(filedata)
     ordre = definition_ordre(filedata)
+    boutons_simplifies = definition_boutons_simplifies()
 
     print("MISE EN FORME DES TITRES DU DECRET...")
     filedata = mise_en_forme_titres(filedata, ordre)
 
     print("RECUPERATION DES LIGNES ASSOCIEES A CHAQUE PERSONNE...")
     print("==================================================")
-    filedata = traitement(filedata, NOR, date_decret_ISO_wiki, ordre)
+    filedata = traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies)
 
     print("AJOUT DU CHAMP QUICKSTATEMENTS A LA FIN DU FICHIER...")
     filedata = QS_ajout_script(filedata)
