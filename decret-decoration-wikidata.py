@@ -149,7 +149,7 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
         if debug: print(f"rang_personne = {rang_personne}")
         if debug: print("RECHERCHE ET FORMATAGE DU NOM DANS LE DECRET...")
         personne_listee = get_nom(filedata,xxx,rang_personne,offset)
-        print(f"{rang_personne} / {len(xxx)} : {personne_listee}")
+        print(f"{rang_personne} / {len(xxx)-1} : {personne_listee}")
         if debug: print("RECHERCHE DE LA PERSONNE SUR WIKIDATA...")
         params1 = {
             "action" : "wbsearchentities",
@@ -167,7 +167,7 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
                 if debug: print("RECHERCHE DES LABEL ET DESCRIPTION SUR WIKIDATA...")
                 label = get_label(data1,rang_personne_Q)
                 description = get_description(data1,rang_personne_Q)
-                print(f"{rang_personne} / {len(xxx)} - {rang_personne_Q} : {id} : {label}, {description}")
+                print(f"{rang_personne} / {len(xxx)-1} - {rang_personne_Q} : {id} : {label}, {description}")
                 description = filtre_description(description)
                 if debug: print("RECHERCHE DES DECORATIONS (ONM ET LH) SUR WIKIDATA...")
                 decoration_obtenue, decoration_date = get_decorations(id)
@@ -192,6 +192,25 @@ def construction_index(filedata):
     if debug: print(xxx)
     xxx.sort()
     if debug: print(xxx)
+    # Pour éviter bug si retour à la ligne manquant dans le décret. ex: M. Malet (Désiré) dans PREX9310861D
+    # vérification qu'il y a une forme de retour à la ligne entre chaque personne, sinon on supprime la personne suivante
+    xxx = check_retour_a_la_ligne(filedata,xxx)
+    return xxx
+
+def check_retour_a_la_ligne(filedata,xxx):
+    valeurs_a_suppr = []
+    for i in range(len(xxx)-1):
+        if debug: print(f"Vérification couple {i}/{i+1} : {xxx[i]}/{xxx[i+1]}")
+        if max(filedata[xxx[i]:xxx[i+1]].find("<br>"),filedata[xxx[i]:xxx[i+1]].find("<p"),filedata[xxx[i]:xxx[i+1]].find("</p>")) == -1:
+            print(f"position {xxx[i+1]} supprimée de l'index car pas de retour à la ligne")
+            print(f"filedata[{xxx[i]}:{xxx[i+1]}+10]) : {filedata[xxx[i]:xxx[i+1]+10]}")
+            #xxx[i+1] = "ko"
+            valeurs_a_suppr.append(xxx[i+1])
+    if debug: print(f"valeurs_a_suppr : {valeurs_a_suppr}")
+    if debug: print(f"xxx avant check_retour_a_la_ligne : {xxx}")
+    #xxx = [value for value in xxx if value != "ko"]
+    xxx = [value for value in xxx if value not in valeurs_a_suppr]
+    if debug: print(f"xxx après check_retour_a_la_ligne : {xxx}")
     return xxx
 
 def get_nom(filedata,xxx,rang_personne,offset):
@@ -339,7 +358,7 @@ def filtre_date_deces(date_deces,date_decret_ISO_wiki):
     return date_deces
 
 def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simplifies,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date):
-    if debug: print(f"{xxx[rang_personne]} + {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}")
+    if debug: print(f"{xxx[rang_personne]} + (offset) {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}")
     #recherche du saut suivant
     br_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br>")
     if debug: print(f"br_suivant : {br_suivant}")
@@ -353,6 +372,7 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simpl
     if debug: print("début injection")
     injection_index = xxx[rang_personne] + offset + saut_suivant
     if debug: print(f"injection_index = {injection_index}")
+    if debug: print(f"(injection_index) {injection_index} : {filedata[injection_index:injection_index+1000]}")
     #ajout de la personne trouvée sur wikidata
     injection_str = "<style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + str(rang_personne) + "/" + str(rang_personne_Q) + \
         " : <b><a href=\"https://www.wikidata.org/wiki/" + id + "\">" + id + " : " + \
