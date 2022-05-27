@@ -14,11 +14,13 @@ debug = False
 
 url = "https://www.wikidata.org/w/api.php"
 
-decoration_nom = ["Chevalier ONM", "Officier ONM", "Commandeur ONM", "Grand Officier ONM", "Grand'Croix ONM", "ONM",\
-    "Chevalier LH", "Officier LH", "Commandeur LH", "Grand Officier LH", "Grand'Croix LH", "LH"]
+decoration_nom = ["Chevalier ONM", "Officier ONM", "Commandeur ONM", "Grand Officier ONM", "Grand'Croix ONM", "ONM", \
+    "Chevalier LH", "Officier LH", "Commandeur LH", "Grand Officier LH", "Grand'Croix LH", "LH", \
+    "Chevalier AL", "Officier AL", "Commandeur AL", "AL"]
 decoration_total = len(decoration_nom)
 decoration_Q = ["Q13422138", "Q13422140", "Q13422141", "Q13422142", "Q13422143", "Q652962", \
-    "Q10855271", "Q10855195", "Q10855212", "Q10855216", "Q10855226", "Q163700"]
+    "Q10855271", "Q10855195", "Q10855212", "Q10855216", "Q10855226", "Q163700", \
+    "Q13452528", "Q13452524", "Q13452531", "Q716909"]
 decoration_img = ["https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Ordre_national_du_Merite_Chevalier_ribbon.svg/218px-Ordre_national_du_Merite_Chevalier_ribbon.svg.png", \
     "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Ordre_national_du_Merite_Officier_ribbon.svg/218px-Ordre_national_du_Merite_Officier_ribbon.svg.png", \
     "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Ordre_national_du_Merite_Commandeur_ribbon.svg/218px-Ordre_national_du_Merite_Commandeur_ribbon.svg.png", \
@@ -30,7 +32,11 @@ decoration_img = ["https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Ord
     "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Legion_Honneur_Commandeur_ribbon.svg/218px-Legion_Honneur_Commandeur_ribbon.svg.png", \
     "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Legion_Honneur_GO_ribbon.svg/218px-Legion_Honneur_GO_ribbon.svg.png", \
     "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Legion_Honneur_GC_ribbon.svg/218px-Legion_Honneur_GC_ribbon.svg.png", \
-    "https://upload.wikimedia.org/wikipedia/commons/8/81/De_la_legion_d_honneur_Recto.png"]
+    "https://upload.wikimedia.org/wikipedia/commons/8/81/De_la_legion_d_honneur_Recto.png", \
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Ordre_des_Arts_et_des_Lettres_Chevalier_ribbon.svg/218px-Ordre_des_Arts_et_des_Lettres_Chevalier_ribbon.svg.png", \
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Ordre_des_Arts_et_des_Lettres_Officier_ribbon.svg/218px-Ordre_des_Arts_et_des_Lettres_Officier_ribbon.svg.png", \
+    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Ordre_des_Arts_et_des_Lettres_Commandeur_ribbon.svg/218px-Ordre_des_Arts_et_des_Lettres_Commandeur_ribbon.svg.png", \
+    "https://upload.wikimedia.org/wikipedia/commons/9/9c/Chevalier_arts_et_lettres.jpg"]
 
 def definition_NOR(filedata):
     NOR = filedata[filedata.find("NOR :")+6:filedata.find("NOR :")+6+12] #récupère "PRER2104806D" dans "NOR : PRER2104806D"
@@ -52,9 +58,13 @@ def check_date(date_a_checker):
 
 def definition_date_decret_ISO_wiki(filedata):
     date_decret = "[non trouvé]"
-    if filedata.find("portant nomination") != -1: date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant nomination")-1]
-    if filedata.find("portant promotion") != -1: date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant promotion")-1]
-    if filedata.find("portant élévation") != -1: date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant élévation")-1]
+    if filedata.find("Décret du") != -1:
+        if filedata.find("portant nomination") != -1: date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant nomination")-1]
+        if filedata.find("portant promotion") != -1: date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant promotion")-1]
+        if filedata.find("portant élévation") != -1: date_decret = filedata[filedata.find("Décret du")+10:filedata.find("portant élévation")-1]
+    if filedata.find("Arrêté du") != -1:
+        if filedata.find("portant nomination") != -1: date_decret = filedata[filedata.find("Arrêté du")+10:filedata.find("portant nomination")-1]
+        if filedata.find("portant promotion") != -1: date_decret = filedata[filedata.find("Arrêté du")+10:filedata.find("portant promotion")-1]
     if debug: print(f"date_decret = {date_decret}")
     date_decret_ISO = "[non trouvé]"
     if date_decret != "[non trouvé]":
@@ -105,11 +115,12 @@ def definition_ordre(filedata):
         if filedata.find("ORDRE NATIONAL DU MERITE Décret du") != -1: ordre = "ONM"
         if filedata.find("sont élevés dans l'ordre national du Mérite") != -1: ordre = "ONM"
         if filedata.find("est élevé dans l'ordre national du Mérite") != -1: ordre = "ONM"
-    print("Ordre ? LH ou ONM ?   Par défaut (reconnu dans in.html) :", ordre)
+    if filedata.find("dans l'ordre des Arts et des Lettres") != -1: ordre = "AL"
+    print("Ordre ? LH, ONM ou AL (AL n'est pas encore fonctionnel) ?   Par défaut (reconnu dans in.html) :", ordre)
     ordre = input() or ordre
     print("ordre =", ordre)
-    if (ordre == "LH") or (ordre == "ONM"): return ordre
-    raise SystemExit("Erreur : ordre doit être LH (Légion d'Honneur) ou ONM (Ordre National du Mérite)")
+    if (ordre == "LH") or (ordre == "ONM") or (ordre == "AL"): return ordre
+    raise SystemExit("Erreur : ordre doit être LH (Légion d'Honneur), ONM (Ordre National du Mérite) ou AL (Arts et Lettres)")
 
 def definition_boutons_simplifies():
     print("Boutons simplifiés (O/N) ?   Par défaut et recommandé : O")
