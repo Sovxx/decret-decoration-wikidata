@@ -160,35 +160,39 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
         if debug: print(f"rang_personne = {rang_personne}")
         if debug: print("RECHERCHE ET FORMATAGE DU NOM DANS LE DECRET...")
         personne_listee = get_nom(filedata,xxx,rang_personne,offset)
-        print(f"{rang_personne} / {len(xxx)-1} : {personne_listee}")
-        if debug: print("RECHERCHE DE LA PERSONNE SUR WIKIDATA...")
-        params1 = {
-            "action" : "wbsearchentities",
-            "language" : "fr",
-            "format" : "json",
-            "search" : personne_listee
-        }
-        data1 = requests.get(url, params=params1)
-        rang_personne_Q = 0 # pour balayer les différents homonymes
-        id = ""
-        while id != "KO":
-            if debug: print(f"rang_personne_Q = {rang_personne_Q}")
-            id = get_id(data1,rang_personne_Q)
-            if id != "KO":
-                if debug: print("RECHERCHE DES LABEL ET DESCRIPTION SUR WIKIDATA...")
-                label = get_label(data1,rang_personne_Q)
-                description = get_description(data1,rang_personne_Q)
-                print(f"{rang_personne} / {len(xxx)-1} - {rang_personne_Q} : {id} : {label}, {description}")
-                description = filtre_description(description)
-                if debug: print("RECHERCHE DES DECORATIONS (ONM ET LH) SUR WIKIDATA...")
-                decoration_obtenue, decoration_date = get_decorations(id)
-                if debug: print("RECHERCHE DES DATES DE NAISSANCE ET DE DECES SUR WIKIDATA...")
-                date_naissance = get_date_naissance(id)
-                date_naissance = filtre_date_naissance(date_naissance,date_decret_ISO_wiki)
-                date_deces = get_date_deces(id)
-                date_deces = filtre_date_deces(date_deces,date_decret_ISO_wiki)
-                if debug: print("INJECTION DES INFOS ET DECORATIONS (ONM ET LH) WIKIDATA DANS LE DECRET...")
-                filedata, offset = injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simplifies,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date)
+        liste_des_id = [] #juste pour éviter plusieurs fois le même id (Q wikidata) si trouvé pour différents alias
+        for alias in personne_listee:
+            #print(f"{rang_personne} / {len(xxx)-1} : {personne_listee}")
+            print(f"{rang_personne} / {len(xxx)-1} : *****{alias}*****")
+            if debug: print("RECHERCHE DE LA PERSONNE SUR WIKIDATA...")
+            params1 = {
+                "action" : "wbsearchentities",
+                "language" : "fr",
+                "format" : "json",
+                "search" : alias
+            }
+            data1 = requests.get(url, params=params1)
+            rang_personne_Q = 0 # pour balayer les différents homonymes
+            id = ""
+            while id != "KO":
+                if debug: print(f"rang_personne_Q = {rang_personne_Q}")
+                id = get_id(data1,rang_personne_Q)
+                if id != "KO" and liste_des_id.count(id) == 0:
+                    if debug: print("RECHERCHE DES LABEL ET DESCRIPTION SUR WIKIDATA...")
+                    label = get_label(data1,rang_personne_Q)
+                    description = get_description(data1,rang_personne_Q)
+                    print(f"{rang_personne} / {len(xxx)-1} - {rang_personne_Q} : {id} : {label}, {description}")
+                    description = filtre_description(description)
+                    if debug: print("RECHERCHE DES DECORATIONS (ONM ET LH) SUR WIKIDATA...")
+                    decoration_obtenue, decoration_date = get_decorations(id)
+                    if debug: print("RECHERCHE DES DATES DE NAISSANCE ET DE DECES SUR WIKIDATA...")
+                    date_naissance = get_date_naissance(id)
+                    date_naissance = filtre_date_naissance(date_naissance,date_decret_ISO_wiki)
+                    date_deces = get_date_deces(id)
+                    date_deces = filtre_date_deces(date_deces,date_decret_ISO_wiki)
+                    if debug: print("INJECTION DES INFOS ET DECORATIONS (ONM ET LH) WIKIDATA DANS LE DECRET...")
+                    filedata, offset = injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simplifies,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date)
+                    liste_des_id.append(id)
                 rang_personne_Q = rang_personne_Q + 1
         print("-------------------------------")
         rang_personne = rang_personne + 1
@@ -225,14 +229,19 @@ def check_retour_a_la_ligne(filedata,xxx):
     return xxx
 
 def get_nom(filedata,xxx,rang_personne,offset):
-    if debug: print(f"{xxx[rang_personne]} + {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}") #105412 : Mme Dupont, née Durant (Jeanne, Marie, Hélène), dirigeante d'entrep
+    personne_listee = []
+    if debug: print(f"{xxx[rang_personne]} + {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}") #105412 : Mme Dupont, née Durant (Jeanne dite Jeannine, Marie, Hélène), dirigeante d'entrep
     ouverture_parenthese = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("(")
     fermeture_parenthese = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find(")")
     prenoms = filedata[xxx[rang_personne]+offset+ouverture_parenthese+1:xxx[rang_personne]+offset+fermeture_parenthese]
-    if debug: print(f"prenoms = {prenoms}") #prenoms = Jeanne, Marie, Hélène
+    print(f"{rang_personne} / {len(xxx)-1} : prénoms = {prenoms}") #prénoms = Jeanne dite Jeannine, Marie, Hélène
     if prenoms.find(",") == -1: prenom = prenoms
     else:
         prenom = prenoms[0:prenoms.find(",")]
+    if prenom.find(" dit ") != -1:
+        prenom = prenom[0:prenom.find(" dit ")]
+    if prenom.find(" dite ") != -1:
+        prenom = prenom[0:prenom.find(" dite ")]
     if debug: print(f"prenom = {prenom}") #prenom = Jeanne
     if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+4] == "Mme ":
         if debug: print("titre = Mme")
@@ -247,15 +256,50 @@ def get_nom(filedata,xxx,rang_personne,offset):
         if debug: print("titre = M.")
         longueur_titre = 8
     if debug: print(f"longueur_titre = {longueur_titre}")
-    nom_complet = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+ouverture_parenthese]
-    if debug: print(f"nom complet = {nom_complet}") #Mme Dupont, née Durant
+    nom_complet = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+ouverture_parenthese-1]
+    if debug: print(f"nom complet = {nom_complet}")
+    print(f"{rang_personne} / {len(xxx)-1} : nom complet = {nom_complet}") #nom complet = Mme Dupont, née Durant
     if nom_complet.find(",") == -1:
         nom = nom_complet
     else:
         nom = nom_complet[0:nom_complet.find(",")]
     if debug: print("nom =", nom) #nom = Dupont
-    personne_listee = prenom + " " + nom
-    if debug: print(f"personne_listee = {personne_listee}") #personne_listee = Jeanne Dupont
+    personne_listee.append(prenom + " " + nom)
+    if debug: print(f"personne_listee = {personne_listee[0]}") #personne_listee = Jeanne Dupont
+    #Recherche d'autres alias à rechercher sur wikidata
+    nom_de_naissance = ""
+    if nom_complet.find(", né ") != -1:
+        nom_de_naissance = nom_complet[nom_complet.find(", né ")+5:len(nom_complet)]
+        if debug: print(f"nom_de_naissance = {nom_de_naissance}")
+        personne_listee.append(prenom + " " + nom_de_naissance)
+    if nom_complet.find(", née ") != -1:
+        nom_de_naissance = nom_complet[nom_complet.find(", née ")+6:len(nom_complet)]
+        if debug: print(f"nom_de_naissance = {nom_de_naissance}")
+        personne_listee.append(prenom + " " + nom_de_naissance) #Jeanne Durant
+    if prenoms.find(" dit ") != -1:
+        prenom_d_usage = prenoms[prenoms.find(" dit ")+5:len(prenoms)]
+        if debug: print(f"prenom_d_usage = {prenom_d_usage}")
+        personne_listee.append(prenom_d_usage + " " + nom)
+        if nom_complet.find(", né ") != -1:
+            nom_de_naissance = nom_complet[nom_complet.find(", né ")+5:len(nom_complet)]
+            if debug: print(f"nom_de_naissance = {nom_de_naissance}")
+            personne_listee.append(prenom + " " + nom_de_naissance)
+        if nom_complet.find(", née ") != -1:
+            nom_de_naissance = nom_complet[nom_complet.find(", née ")+6:len(nom_complet)]
+            if debug: print(f"nom_de_naissance = {nom_de_naissance}")
+            personne_listee.append(prenom_d_usage + " " + nom_de_naissance)
+    if prenoms.find(" dite ") != -1:
+        prenom_d_usage = prenoms[prenoms.find(" dite ")+6:len(prenoms)]
+        if debug: print(f"prenom_d_usage = {prenom_d_usage}")
+        personne_listee.append(prenom_d_usage + " " + nom) #Jeannine Dupont
+        if nom_complet.find(", né ") != -1:
+            nom_de_naissance = nom_complet[nom_complet.find(", né ")+5:len(nom_complet)]
+            if debug: print(f"nom_de_naissance = {nom_de_naissance}")
+            personne_listee.append(prenom + " " + nom_de_naissance)
+        if nom_complet.find(", née ") != -1:
+            nom_de_naissance = nom_complet[nom_complet.find(", née ")+6:len(nom_complet)]
+            if debug: print(f"nom_de_naissance = {nom_de_naissance}")
+            personne_listee.append(prenom_d_usage + " " + nom_de_naissance) #Jeannine Durant
     return personne_listee
 
 def get_id(data1,rang_personne_Q):
