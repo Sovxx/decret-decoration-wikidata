@@ -449,7 +449,7 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simpl
         injection_str = injection_str + bold1 + " <form onclick=\"QS_ajout_ligne('" + id + "|P166|" + decoration_Q[QS_compteur_bouton_decoration] + "|P585|" + date_decret_ISO_wiki + "|S464|','" + NOR + "','" + id + decoration_Q[QS_compteur_bouton_decoration] + \
             "')\"><input type=\"button\" id=\"" + id + decoration_Q[QS_compteur_bouton_decoration] + "\" value=\"" + decoration_nom[QS_compteur_bouton_decoration] + "\"></form>" + bold2
     #ajout des éventuelles décorations existantes
-    for k in [10,9,8,7,6,11,4,3,2,1,0,5]: #pour affichage des plus hautes décorations en premier
+    for k in [10,9,8,7,6,11,4,3,2,1,0,5,14,13,12,15]: #pour affichage des plus hautes décorations en premier
         if decoration_obtenue[k] == 1:
             injection_str = injection_str + "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src=\"" + decoration_img[k] + "\" width=\"50\"> &nbsp;" + "<a href=\"https://www.wikidata.org/wiki/" + id + "#P166\">" + decoration_nom[k] + "</a>"
             if decoration_date[k] != 0:
