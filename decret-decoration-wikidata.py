@@ -216,7 +216,7 @@ def check_retour_a_la_ligne(filedata,xxx):
     valeurs_a_suppr = []
     for i in range(len(xxx)-1):
         if debug: print(f"Vérification couple {i}/{i+1} : {xxx[i]}/{xxx[i+1]}")
-        if max(filedata[xxx[i]:xxx[i+1]].find("<br>"),filedata[xxx[i]:xxx[i+1]].find("<p"),filedata[xxx[i]:xxx[i+1]].find("</p>")) == -1:
+        if max(filedata[xxx[i]:xxx[i+1]].find("<br>"),filedata[xxx[i]:xxx[i+1]].find("<br/>"),filedata[xxx[i]:xxx[i+1]].find("<p"),filedata[xxx[i]:xxx[i+1]].find("</p>")) == -1:
             print(f"position {xxx[i+1]} supprimée de l'index car pas de retour à la ligne")
             print(f"filedata[{xxx[i]}:{xxx[i+1]}+10]) : {filedata[xxx[i]:xxx[i+1]+10]}")
             #xxx[i+1] = "ko"
@@ -416,12 +416,12 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simpl
     if debug: print(f"{xxx[rang_personne]} + (offset) {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}")
     #recherche du saut suivant
     br_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br>")
-    if debug: print(f"br_suivant : {br_suivant}")
-    if br_suivant == -1 : br_suivant = 10000
+    if br_suivant == -1: br_suivant = 10000
+    brslash_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br/>")
+    if brslash_suivant == -1: brslash_suivant = 10000
     p_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("</p>")
-    if debug: print(f"p_suivant : {p_suivant}")
-    if p_suivant == -1 : p_suivant = 10000
-    saut_suivant = min(br_suivant, p_suivant)
+    if p_suivant == -1: p_suivant = 10000
+    saut_suivant = min(br_suivant,brslash_suivant,p_suivant)
     if debug: print(f"saut_suivant : {saut_suivant}")
     #position d'injection
     if debug: print("début injection")
