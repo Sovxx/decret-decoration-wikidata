@@ -415,18 +415,13 @@ def filtre_date_deces(date_deces,date_decret_ISO_wiki):
 def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simplifies,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date):
     if debug: print(f"{xxx[rang_personne]} + (offset) {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}")
     #recherche du saut suivant
-    br_suivant1 = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br>")
-    br_suivant2 = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br/>")
-    if br_suivant1 != -1 and br_suivant2 != -1:
-        br_suivant = min(br_suivant1,br_suivant2)
-    else:
-        br_suivant = max(br_suivant1,br_suivant2)
-    if debug: print(f"br_suivant : {br_suivant}")
-    if br_suivant == -1 : br_suivant = 10000
+    br_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br>")
+    if br_suivant == -1: br_suivant = 10000
+    brslash_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br/>")
+    if brslash_suivant == -1: brslash_suivant = 10000
     p_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("</p>")
-    if debug: print(f"p_suivant : {p_suivant}")
-    if p_suivant == -1 : p_suivant = 10000
-    saut_suivant = min(br_suivant, p_suivant)
+    if p_suivant == -1: p_suivant = 10000
+    saut_suivant = min(br_suivant,brslash_suivant,p_suivant)
     if debug: print(f"saut_suivant : {saut_suivant}")
     #position d'injection
     if debug: print("début injection")
