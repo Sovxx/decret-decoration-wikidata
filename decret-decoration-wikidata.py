@@ -216,7 +216,7 @@ def check_retour_a_la_ligne(filedata,xxx):
     valeurs_a_suppr = []
     for i in range(len(xxx)-1):
         if debug: print(f"Vérification couple {i}/{i+1} : {xxx[i]}/{xxx[i+1]}")
-        if max(filedata[xxx[i]:xxx[i+1]].find("<br>"),filedata[xxx[i]:xxx[i+1]].find("<p"),filedata[xxx[i]:xxx[i+1]].find("</p>")) == -1:
+        if max(filedata[xxx[i]:xxx[i+1]].find("<br>"),filedata[xxx[i]:xxx[i+1]].find("<br/>"),filedata[xxx[i]:xxx[i+1]].find("<p"),filedata[xxx[i]:xxx[i+1]].find("</p>")) == -1:
             print(f"position {xxx[i+1]} supprimée de l'index car pas de retour à la ligne")
             print(f"filedata[{xxx[i]}:{xxx[i+1]}+10]) : {filedata[xxx[i]:xxx[i+1]+10]}")
             #xxx[i+1] = "ko"
@@ -415,7 +415,12 @@ def filtre_date_deces(date_deces,date_decret_ISO_wiki):
 def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simplifies,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date):
     if debug: print(f"{xxx[rang_personne]} + (offset) {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}")
     #recherche du saut suivant
-    br_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br>")
+    br_suivant1 = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br>")
+    br_suivant2 = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br/>")
+    if br_suivant1 != -1 and br_suivant2 != -1:
+        br_suivant = min(br_suivant1,br_suivant2)
+    else:
+        br_suivant = max(br_suivant1,br_suivant2)
     if debug: print(f"br_suivant : {br_suivant}")
     if br_suivant == -1 : br_suivant = 10000
     p_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("</p>")
