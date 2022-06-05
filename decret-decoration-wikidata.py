@@ -515,6 +515,9 @@ def suppression_p(filedata,ordre):
     xxxgrade = [] #tableau des chaînes de caractères correspondantes aux débuts de chaque grade
     for m in re.finditer("<b>Au grade d", filedata):
         xxxgrade.append(m.start())
+    for m in re.finditer("<b>A la dignité de", filedata):
+        xxxgrade.append(m.start())
+    xxxgrade.sort()
     if debug: print(xxxgrade)
     offset = 0
     for paragraphe in xxxgrade:
