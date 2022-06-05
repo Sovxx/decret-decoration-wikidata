@@ -150,6 +150,10 @@ def mise_en_forme_titres(filedata, ordre):
         filedata = filedata.replace("A la dignité de grand officier", "<b>A la dignité de grand officier</b> <img src=\"" + decoration_img[9] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
         filedata = filedata.replace("A la dignité de grand'croix", "<b>A la dignité de grand'croix</b> <img src=\"" + decoration_img[10] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
         filedata = filedata.replace("A la dignité de grand’croix", "<b>A la dignité de grand’croix</b> <img src=\"" + decoration_img[10] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+    if ordre == "AL":
+        filedata = filedata.replace("au grade de commandeur de l'ordre des Arts et des Lettres", "<b>au grade de commandeur de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade d'officier de l'ordre des Arts et des Lettres", "<b>au grade d'officier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade de chevalier de l'ordre des Arts et des Lettres", "<b>au grade de chevalier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
     return filedata
 
 def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
@@ -159,7 +163,7 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
     while rang_personne < len(xxx):
         if debug: print(f"rang_personne = {rang_personne}")
         if debug: print("RECHERCHE ET FORMATAGE DU NOM DANS LE DECRET...")
-        personne_listee = get_nom(filedata,xxx,rang_personne,offset)
+        personne_listee = get_nom(filedata,xxx,rang_personne,offset,ordre)
         liste_des_id = [] #juste pour éviter plusieurs fois le même id (Q wikidata) si trouvé pour différents alias
         for alias in personne_listee:
             #print(f"{rang_personne} / {len(xxx)-1} : {personne_listee}")
@@ -228,21 +232,21 @@ def check_retour_a_la_ligne(filedata,xxx):
     if debug: print(f"xxx après check_retour_a_la_ligne : {xxx}")
     return xxx
 
-def get_nom(filedata,xxx,rang_personne,offset):
+def get_nom(filedata,xxx,rang_personne,offset,ordre):
+
+    #remplacement des &nbsp; dans la ligne
+    ligne = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+get_saut_suivant(filedata,xxx,rang_personne,offset)]
+    print(ligne)
+    longueur_ligne_avant_remplacement = len(ligne)
+    ligne = ligne.replace("&nbsp;"," ")
+    print(ligne)
+    print(f"avant modif : {filedata[xxx[rang_personne]+offset-10:xxx[rang_personne]+offset+150]}")
+    filedata=filedata[:xxx[rang_personne]+offset] + ligne + filedata[xxx[rang_personne]+offset+longueur_ligne_avant_remplacement:]
+    print(f"après modif : {filedata[xxx[rang_personne]+offset-10:xxx[rang_personne]+offset+150]}")
+
     personne_listee = []
     if debug: print(f"{xxx[rang_personne]} + {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}") #105412 : Mme Dupont, née Durant (Jeanne dite Jeannine, Marie, Hélène), dirigeante d'entrep
-    ouverture_parenthese = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("(")
-    fermeture_parenthese = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find(")")
-    prenoms = filedata[xxx[rang_personne]+offset+ouverture_parenthese+1:xxx[rang_personne]+offset+fermeture_parenthese]
-    print(f"{rang_personne} / {len(xxx)-1} : prénoms = {prenoms}") #prénoms = Jeanne dite Jeannine, Marie, Hélène
-    if prenoms.find(",") == -1: prenom = prenoms
-    else:
-        prenom = prenoms[0:prenoms.find(",")]
-    if prenom.find(" dit ") != -1:
-        prenom = prenom[0:prenom.find(" dit ")]
-    if prenom.find(" dite ") != -1:
-        prenom = prenom[0:prenom.find(" dite ")]
-    if debug: print(f"prenom = {prenom}") #prenom = Jeanne
+
     if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+4] == "Mme ":
         if debug: print("titre = Mme")
         longueur_titre = 4
@@ -252,11 +256,55 @@ def get_nom(filedata,xxx,rang_personne,offset):
     if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+9] == "Mme&nbsp;":
         if debug: print("titre = Mme")
         longueur_titre = 9
+    if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5] == "Mme  ":
+        if debug: print("titre = Mme")
+        longueur_titre = 5
+    if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+6] == "Mme   ":
+        if debug: print("titre = Mme")
+        longueur_titre = 6
+    if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+7] == "Mme    ":
+        if debug: print("titre = Mme")
+        longueur_titre = 7
     if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+8] == "M.&nbsp;":
         if debug: print("titre = M.")
         longueur_titre = 8
     if debug: print(f"longueur_titre = {longueur_titre}")
-    nom_complet = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+ouverture_parenthese-1]
+
+    if ordre == "LH" or ordre == "ONM":
+        ouverture_parenthese = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("(")
+        fermeture_parenthese = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find(")")
+        prenoms = filedata[xxx[rang_personne]+offset+ouverture_parenthese+1:xxx[rang_personne]+offset+fermeture_parenthese]
+
+        print(f"{rang_personne} / {len(xxx)-1} : prénoms = {prenoms}") #prénoms = Jeanne dite Jeannine, Marie, Hélène
+        if prenoms.find(",") == -1: prenom = prenoms
+        else:
+            prenom = prenoms[0:prenoms.find(",")]
+        if prenom.find(" dit ") != -1:
+            prenom = prenom[0:prenom.find(" dit ")]
+        if prenom.find(" dite ") != -1:
+            prenom = prenom[0:prenom.find(" dite ")]
+        if debug: print(f"prenom = {prenom}") #prenom = Jeanne
+
+        nom_complet = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+ouverture_parenthese-1]
+
+    if ordre == "AL":
+        prenoms = "Jacqueline"
+
+        print(f"ligne : {filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+150]}")
+        fin_nom_de_famille = 0
+        while not filedata[xxx[rang_personne]+offset+longueur_titre+fin_nom_de_famille:xxx[rang_personne]+offset+longueur_titre+fin_nom_de_famille+1].islower():
+            fin_nom_de_famille += 1
+        fin_nom_de_famille -= 2
+        nom_complet = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+longueur_titre+fin_nom_de_famille]
+        print(f"nom_complet : **{nom_complet}**")
+
+        double_espace_suivant = get_double_espace_suivant(filedata,xxx,rang_personne,offset,longueur_titre)
+        print(f"double_espace_suivant : {double_espace_suivant}")
+        prenom_avant_double_espace = filedata[xxx[rang_personne]+offset+longueur_titre+fin_nom_de_famille+1:xxx[rang_personne]+offset+longueur_titre+double_espace_suivant]
+        print(f"prenom_avant_double_espace : **{prenom_avant_double_espace}**")
+
+        prenom = prenom_avant_double_espace
+
     if debug: print(f"nom complet = {nom_complet}")
     print(f"{rang_personne} / {len(xxx)-1} : nom complet = {nom_complet}") #nom complet = Mme Dupont, née Durant
     if nom_complet.find(",") == -1:
@@ -412,7 +460,7 @@ def filtre_date_deces(date_deces,date_decret_ISO_wiki):
     if int(date_deces) < int(date_decret_ISO_wiki[1:5]): return f"<font color=\"orange\">{date_deces}</font>"
     return date_deces
 
-def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simplifies,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date):
+def get_saut_suivant(filedata,xxx,rang_personne,offset):
     if debug: print(f"{xxx[rang_personne]} + (offset) {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}")
     #recherche du saut suivant
     br_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br>")
@@ -423,7 +471,18 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simpl
     if p_suivant == -1: p_suivant = 10000
     saut_suivant = min(br_suivant,brslash_suivant,p_suivant)
     if debug: print(f"saut_suivant : {saut_suivant}")
-    #position d'injection
+    return saut_suivant
+
+def get_double_espace_suivant(filedata,xxx,rang_personne,offset,longueur_titre): #longueur_titre prise en compte
+    if debug: print(f"{xxx[rang_personne]} + (offset) {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}")
+    #recherche du double espace suivant
+    double_espace_suivant = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+5000].find("  ")
+    if double_espace_suivant == -1: double_espace_suivant = 10000
+    if debug: print(f"double_espace_suivant : {double_espace_suivant}")
+    return double_espace_suivant
+
+def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simplifies,rang_personne,rang_personne_Q,offset,id,label,date_naissance,date_deces,description,decoration_obtenue,decoration_date):
+    saut_suivant = get_saut_suivant(filedata,xxx,rang_personne,offset)    #position d'injection
     if debug: print("début injection")
     injection_index = xxx[rang_personne] + offset + saut_suivant
     if debug: print(f"injection_index = {injection_index}")
@@ -440,6 +499,7 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simpl
     if boutons_simplifies == False:
         if ordre == "LH": QS_range_bouton_decoration = [10,9,8,7,6]
         if ordre == "ONM": QS_range_bouton_decoration = [4,3,2,1,0]
+        if ordre == "AL": QS_range_bouton_decoration = [14,13,12]
     for QS_compteur_bouton_decoration in QS_range_bouton_decoration:
         bold1 = ""
         bold2 = ""
