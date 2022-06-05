@@ -508,6 +508,27 @@ def QS_ajout_script(filedata):
         <p id=\"p\"></p>" + filedata[filedata.find("</html>"):]
     return filedata
 
+def suppression_p(filedata,ordre):
+    #sans cette fonction, il y a un retour à la ligne non souhaité avant le 1er bouton de chaque grade
+    if ordre != "LH" and ordre != "ONM":
+        return filedata
+    xxxgrade = [] #tableau des chaînes de caractères correspondantes aux débuts de chaque grade
+    for m in re.finditer("<b>Au grade d", filedata):
+        xxxgrade.append(m.start())
+    for m in re.finditer("<b>A la dignité de", filedata):
+        xxxgrade.append(m.start())
+    xxxgrade.sort()
+    if debug: print(xxxgrade)
+    offset = 0
+    for paragraphe in xxxgrade:
+        emplacement_p = filedata[paragraphe-offset:].find("<p>") #position dans l'extrait
+        emplacement_p = emplacement_p + paragraphe - offset #position globale
+        if debug: print(f"emplacement_p-5 : {filedata[emplacement_p-5:emplacement_p+30]}")
+        filedata = filedata[:emplacement_p] + filedata[emplacement_p+3:]
+        if debug: print(f"emplacement_p-5 : {filedata[emplacement_p-5:emplacement_p+30]}")
+        offset = offset + 3
+    return filedata
+
 def main():
 
     print("OUVERTURE DU FICHIER \"in.html\"...")
@@ -532,6 +553,9 @@ def main():
 
     print("AJOUT DU CHAMP QUICKSTATEMENTS A LA FIN DU FICHIER...")
     filedata = QS_ajout_script(filedata)
+
+    print("NETTOYAGE...")
+    filedata = suppression_p(filedata,ordre)
 
     print("ENREGISTREMENT DU FICHIER \"out.html\"...")
     with open("out.html", 'w') as file:
