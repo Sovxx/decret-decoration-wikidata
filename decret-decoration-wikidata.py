@@ -568,24 +568,42 @@ def QS_ajout_script(filedata):
         <p id=\"p\"></p>" + filedata[filedata.find("</html>"):]
     return filedata
 
+def suppression_debut(filedata,ordre):
+    if ordre != "AL":
+        return filedata
+    #supprime tout avant le "<p class="excerpt">"
+    position_p = filedata.rfind("""<p class="excerpt">""")
+    filedata = filedata[position_p:]
+    #supprime tout après le 1er "</div>" après "Bulletin officiel" (à la fin de l'arrêté)
+    position_bulletin = filedata.rfind("""Bulletin officiel""")
+    position_div = filedata[position_bulletin:].find("""</div>""")
+    filedata = filedata[:position_bulletin+position_div+6]
+    #mise en forme
+    """<html><font face = "Arial" size = "2">"""+filedata+"""</html>"""
+    return filedata
+
 def suppression_p(filedata,ordre):
     #sans cette fonction, il y a un retour à la ligne non souhaité avant le 1er bouton de chaque grade
-    if ordre != "LH" and ordre != "ONM":
-        return filedata
     xxxgrade = [] #tableau des chaînes de caractères correspondantes aux débuts de chaque grade
-    for m in re.finditer("<b>Au grade d", filedata):
-        xxxgrade.append(m.start())
-    for m in re.finditer("<b>A la dignité de", filedata):
-        xxxgrade.append(m.start())
-    xxxgrade.sort()
-    if debug: print(xxxgrade)
+    if ordre == "LH" or ordre == "ONM":
+        for m in re.finditer("<b>Au grade d", filedata):
+            xxxgrade.append(m.start())
+        for m in re.finditer("<b>A la dignité de", filedata):
+            xxxgrade.append(m.start())
+        xxxgrade.sort()
+    if ordre == "AL":
+        for m in re.finditer("<b>au grade d", filedata):
+            xxxgrade.append(m.start())
+    print(xxxgrade)
+    if ordre == "AL":
+        filedata = filedata.replace("""<p style="text-align:left;">""","<p>")
     offset = 0
     for paragraphe in xxxgrade:
         emplacement_p = filedata[paragraphe-offset:].find("<p>") #position dans l'extrait
         emplacement_p = emplacement_p + paragraphe - offset #position globale
-        if debug: print(f"emplacement_p-5 : {filedata[emplacement_p-5:emplacement_p+30]}")
+        print(f"emplacement_p-5 : {filedata[emplacement_p-5:emplacement_p+30]}")
         filedata = filedata[:emplacement_p] + filedata[emplacement_p+3:]
-        if debug: print(f"emplacement_p-5 : {filedata[emplacement_p-5:emplacement_p+30]}")
+        print(f"emplacement_p-5 : {filedata[emplacement_p-5:emplacement_p+30]}")
         offset = offset + 3
     return filedata
 
@@ -611,11 +629,12 @@ def main():
     print("==================================================")
     filedata = traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies)
 
+    print("NETTOYAGE...")
+    filedata = suppression_debut(filedata,ordre)
+    filedata = suppression_p(filedata,ordre)
+
     print("AJOUT DU CHAMP QUICKSTATEMENTS A LA FIN DU FICHIER...")
     filedata = QS_ajout_script(filedata)
-
-    print("NETTOYAGE...")
-    filedata = suppression_p(filedata,ordre)
 
     print("ENREGISTREMENT DU FICHIER \"out.html\"...")
     with open("out.html", 'w') as file:
