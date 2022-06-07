@@ -549,6 +549,16 @@ def get_grade_en_cours(texte,ordre): # sert juste à mettre en gras le bouton c
         max_key = max(rangs_precedents, key=rangs_precedents.get)
         if debug: print(max_key)
         return max_key
+    if ordre == "AL": #[14,13,12]
+        rangs_precedents = {
+            14 : texte.rfind("au grade de commandeur"),
+            13 : max(texte.rfind("au grade d'officier"),texte.rfind("au grade d’officier")),
+            12 : texte.rfind("au grade de chevalier")
+        }
+        if debug: print(rangs_precedents)
+        max_key = max(rangs_precedents, key=rangs_precedents.get)
+        if debug: print(max_key)
+        return max_key
 
 def QS_ajout_script(filedata):
     filedata = filedata[:filedata.find("</html>")] + "<script language=\"Javascript\"> \
@@ -579,7 +589,7 @@ def suppression_debut(filedata,ordre):
     position_div = filedata[position_bulletin:].find("""</div>""")
     filedata = filedata[:position_bulletin+position_div+6]
     #mise en forme
-    """<html><font face = "Arial" size = "2">"""+filedata+"""</html>"""
+    filedata = """<html><font face = "Arial" size = "2">""" + filedata + """</html>"""
     return filedata
 
 def suppression_p(filedata,ordre):
