@@ -503,11 +503,15 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simpl
     for QS_compteur_bouton_decoration in QS_range_bouton_decoration:
         bold1 = ""
         bold2 = ""
+        style_bolded = ""
         if QS_compteur_bouton_decoration == grade_en_cours:
-            bold1 = "<b>"
-            bold2 = "</b>"
+            if ordre == "ONM" or ordre == "LH":
+                bold1 = "<b>"
+                bold2 = "</b>"
+            if ordre == "AL":
+                style_bolded = """class="bolded" """
         injection_str = injection_str + bold1 + " <form onclick=\"QS_ajout_ligne('" + id + "|P166|" + decoration_Q[QS_compteur_bouton_decoration] + "|P585|" + date_decret_ISO_wiki + "|S464|','" + NOR + "','" + id + decoration_Q[QS_compteur_bouton_decoration] + \
-            "')\"><input type=\"button\" id=\"" + id + decoration_Q[QS_compteur_bouton_decoration] + "\" value=\"" + decoration_nom[QS_compteur_bouton_decoration] + "\"></form>" + bold2
+            "')\"><input type=\"button\"" + style_bolded + " id=\"" + id + decoration_Q[QS_compteur_bouton_decoration] + "\" value=\"" + decoration_nom[QS_compteur_bouton_decoration] + "\"></form>" + bold2
     #ajout des éventuelles décorations existantes
     for k in [10,9,8,7,6,11,4,3,2,1,0,5,14,13,12,15]: #pour affichage des plus hautes décorations en premier
         if decoration_obtenue[k] == 1:
@@ -589,7 +593,7 @@ def suppression_debut(filedata,ordre):
     position_div = filedata[position_bulletin:].find("""</div>""")
     filedata = filedata[:position_bulletin+position_div+6]
     #mise en forme
-    filedata = """<html><font face = "Arial" size = "2">""" + filedata + """</html>"""
+    filedata = """<html><head><link rel="stylesheet" href="style.css"></head>""" + filedata + """</html>"""
     return filedata
 
 def suppression_p(filedata,ordre):
