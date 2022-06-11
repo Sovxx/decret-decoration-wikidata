@@ -236,13 +236,13 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
 
     #remplacement des &nbsp; dans la ligne
     ligne = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+get_saut_suivant(filedata,xxx,rang_personne,offset)]
-    print(ligne)
+    if debug: print(f"ligne avant modif : {ligne}")
     longueur_ligne_avant_remplacement = len(ligne)
     ligne = ligne.replace("&nbsp;"," ")
-    print(ligne)
-    print(f"avant modif : {filedata[xxx[rang_personne]+offset-10:xxx[rang_personne]+offset+150]}")
+    print(f"ligne après modif : {ligne}")
+    if debug: print(f"zone avant modif : {filedata[xxx[rang_personne]+offset-10:xxx[rang_personne]+offset+150]}")
     filedata=filedata[:xxx[rang_personne]+offset] + ligne + filedata[xxx[rang_personne]+offset+longueur_ligne_avant_remplacement:]
-    print(f"après modif : {filedata[xxx[rang_personne]+offset-10:xxx[rang_personne]+offset+150]}")
+    if debug: print(f"zone après modif : {filedata[xxx[rang_personne]+offset-10:xxx[rang_personne]+offset+150]}")
 
     personne_listee = []
     if debug: print(f"{xxx[rang_personne]} + {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}") #105412 : Mme Dupont, née Durant (Jeanne dite Jeannine, Marie, Hélène), dirigeante d'entrep
@@ -290,20 +290,58 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
     if ordre == "AL":
         prenoms = "Jacqueline"
 
-        print(f"ligne : {filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+150]}")
-        fin_nom_de_famille = 0
-        while not filedata[xxx[rang_personne]+offset+longueur_titre+fin_nom_de_famille:xxx[rang_personne]+offset+longueur_titre+fin_nom_de_famille+1].islower():
-            fin_nom_de_famille += 1
-        fin_nom_de_famille -= 2
-        nom_complet = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+longueur_titre+fin_nom_de_famille]
-        print(f"nom_complet : **{nom_complet}**")
+        #ligne_hors_titre = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+150]
+        #print(f"{rang_personne} / {len(xxx)-1} : ligne hors titre : {ligne_hors_titre}")
 
+        ligne_hors_titre = ligne[longueur_titre:len(ligne)]
+        print(f"ligne_hors_titre : {ligne_hors_titre}")
+
+
+        principal_full = trim_string(ligne_hors_titre,"","  ")
+        print(f"principal_full : **{principal_full}**")
+
+        naissance_full = trim_string(ligne_hors_titre,"  né","  ")
+        if naissance_full != -1:
+            if naissance_full[:5] != "  né " and naissance_full[:6] != "  née ": naissance_full = -1
+            if naissance_full[:5] == "  né ": naissance_full = naissance_full[5:]
+            if naissance_full[:6] == "  née ": naissance_full = naissance_full[6:]
+        print(f"naissance_full : **{naissance_full}**")
+
+        pseudo_full = trim_string(ligne_hors_titre,"  dit","  ")
+        if pseudo_full != -1:
+            if pseudo_full[:6] != "  dit " and pseudo_full[:7] != "  dite ": pseudo_full = -1
+            if pseudo_full[:6] == "  dit ": pseudo_full = pseudo_full[6:]
+            if pseudo_full[:7] == "  dite ": pseudo_full = pseudo_full[7:]
+        print(f"pseudo_full : **{pseudo_full}**")
+
+
+        #patronyme_avant_double_espace
+        fin_patronyme_avant_double_espace = 0
+        while not filedata[xxx[rang_personne]+offset+longueur_titre+fin_patronyme_avant_double_espace:xxx[rang_personne]+offset+longueur_titre+fin_patronyme_avant_double_espace+1].islower():
+            fin_patronyme_avant_double_espace += 1
+        fin_patronyme_avant_double_espace -= 2
+        patronyme_avant_double_espace = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+longueur_titre+fin_patronyme_avant_double_espace]
+        print(f"patronyme_avant_double_espace : **{patronyme_avant_double_espace}**")
+
+        #naissance
+        fin_naissance = 0
+        "  né"
+
+        #prenom_avant_double_espace
         double_espace_suivant = get_double_espace_suivant(filedata,xxx,rang_personne,offset,longueur_titre)
-        print(f"double_espace_suivant : {double_espace_suivant}")
-        prenom_avant_double_espace = filedata[xxx[rang_personne]+offset+longueur_titre+fin_nom_de_famille+1:xxx[rang_personne]+offset+longueur_titre+double_espace_suivant]
+        if debug: print(f"double_espace_suivant : {double_espace_suivant}")
+        prenom_avant_double_espace = filedata[xxx[rang_personne]+offset+longueur_titre+fin_patronyme_avant_double_espace+1:xxx[rang_personne]+offset+longueur_titre+double_espace_suivant]
         print(f"prenom_avant_double_espace : **{prenom_avant_double_espace}**")
 
+        #patronyme_pseudo
+        #patronyme_naissance
+        #prenom_pseudo
+        #prenom_naissance
+
+        nom_complet = patronyme_avant_double_espace
         prenom = prenom_avant_double_espace
+
+
 
     if debug: print(f"nom complet = {nom_complet}")
     print(f"{rang_personne} / {len(xxx)-1} : nom complet = {nom_complet}") #nom complet = Mme Dupont, née Durant
@@ -349,6 +387,17 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
             if debug: print(f"nom_de_naissance = {nom_de_naissance}")
             personne_listee.append(prenom_d_usage + " " + nom_de_naissance) #Jeannine Durant
     return personne_listee
+
+def trim_string(texte="", texte_debut="", texte_fin=""):
+    #if texte_debut == "": return -1
+    position_debut = texte.find(texte_debut)
+    if position_debut == -1: return -1
+    position_fin = texte[position_debut+1:].find(texte_fin)
+    if position_fin == -1 or position_fin == 0:
+        position_fin = len(texte)
+    else:
+        position_fin = position_debut+1 + position_fin
+    return texte[position_debut:position_fin]
 
 def get_id(data1,rang_personne_Q):
     try:
