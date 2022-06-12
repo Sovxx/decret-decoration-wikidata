@@ -39,8 +39,12 @@ decoration_img = ["https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Ord
     "https://upload.wikimedia.org/wikipedia/commons/9/9c/Chevalier_arts_et_lettres.jpg"]
 
 def definition_NOR(filedata):
-    NOR = filedata[filedata.find("NOR :")+6:filedata.find("NOR :")+6+12] #récupère "PRER2104806D" dans "NOR : PRER2104806D"
-    print(f"Identifiant NOR du décret ?   Par défaut (reconnu dans in.html) : {NOR}")
+    NOR = ""
+    if filedata.find("NOR  :") != -1:
+        NOR = filedata[filedata.find("NOR  :")+7:filedata.find("NOR  :")+7+12] #récupère "MICA2113502A" dans "NOR  : MICA2113502A"
+    if filedata.find("NOR :") != -1:
+        NOR = filedata[filedata.find("NOR :")+6:filedata.find("NOR :")+6+12] #récupère "PRER2104806D" dans "NOR : PRER2104806D"
+    print(f"Identifiant NOR du décret ou de l'arrêté ?   Par défaut (reconnu dans in.html) : {NOR}")
     NOR = input() or NOR
     print(f"NOR = {NOR}")
     return NOR
@@ -239,6 +243,7 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
     if debug: print(f"ligne avant modif : {ligne}")
     longueur_ligne_avant_remplacement = len(ligne)
     ligne = ligne.replace("&nbsp;"," ")
+    ligne = ligne.replace(","," ")
     print(f"ligne après modif : {ligne}")
     if debug: print(f"zone avant modif : {filedata[xxx[rang_personne]+offset-10:xxx[rang_personne]+offset+150]}")
     filedata=filedata[:xxx[rang_personne]+offset] + ligne + filedata[xxx[rang_personne]+offset+longueur_ligne_avant_remplacement:]
@@ -287,117 +292,144 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
 
         nom_complet = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+ouverture_parenthese-1]
 
+        if debug: print(f"nom complet = {nom_complet}")
+        print(f"{rang_personne} / {len(xxx)-1} : nom complet = {nom_complet}") #nom complet = Mme Dupont, née Durant
+        if nom_complet.find(",") == -1:
+            nom = nom_complet
+        else:
+            nom = nom_complet[0:nom_complet.find(",")]
+        if debug: print("nom =", nom) #nom = Dupont
+        personne_listee.append(prenom + " " + nom)
+        if debug: print(f"personne_listee = {personne_listee[0]}") #personne_listee = Jeanne Dupont
+        #Recherche d'autres alias à rechercher sur wikidata
+        nom_de_naissance = ""
+        if nom_complet.find(", né ") != -1:
+            nom_de_naissance = nom_complet[nom_complet.find(", né ")+5:len(nom_complet)]
+            if debug: print(f"nom_de_naissance = {nom_de_naissance}")
+            personne_listee.append(prenom + " " + nom_de_naissance)
+        if nom_complet.find(", née ") != -1:
+            nom_de_naissance = nom_complet[nom_complet.find(", née ")+6:len(nom_complet)]
+            if debug: print(f"nom_de_naissance = {nom_de_naissance}")
+            personne_listee.append(prenom + " " + nom_de_naissance) #Jeanne Durant
+        if prenoms.find(" dit ") != -1:
+            prenom_d_usage = prenoms[prenoms.find(" dit ")+5:len(prenoms)]
+            if debug: print(f"prenom_d_usage = {prenom_d_usage}")
+            personne_listee.append(prenom_d_usage + " " + nom)
+            if nom_complet.find(", né ") != -1:
+                nom_de_naissance = nom_complet[nom_complet.find(", né ")+5:len(nom_complet)]
+                if debug: print(f"nom_de_naissance = {nom_de_naissance}")
+                personne_listee.append(prenom + " " + nom_de_naissance)
+            if nom_complet.find(", née ") != -1:
+                nom_de_naissance = nom_complet[nom_complet.find(", née ")+6:len(nom_complet)]
+                if debug: print(f"nom_de_naissance = {nom_de_naissance}")
+                personne_listee.append(prenom_d_usage + " " + nom_de_naissance)
+        if prenoms.find(" dite ") != -1:
+            prenom_d_usage = prenoms[prenoms.find(" dite ")+6:len(prenoms)]
+            if debug: print(f"prenom_d_usage = {prenom_d_usage}")
+            personne_listee.append(prenom_d_usage + " " + nom) #Jeannine Dupont
+            if nom_complet.find(", né ") != -1:
+                nom_de_naissance = nom_complet[nom_complet.find(", né ")+5:len(nom_complet)]
+                if debug: print(f"nom_de_naissance = {nom_de_naissance}")
+                personne_listee.append(prenom + " " + nom_de_naissance)
+            if nom_complet.find(", née ") != -1:
+                nom_de_naissance = nom_complet[nom_complet.find(", née ")+6:len(nom_complet)]
+                if debug: print(f"nom_de_naissance = {nom_de_naissance}")
+                personne_listee.append(prenom_d_usage + " " + nom_de_naissance) #Jeannine Durant
+
     if ordre == "AL":
-        prenoms = "Jacqueline"
-
-        #ligne_hors_titre = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+150]
-        #print(f"{rang_personne} / {len(xxx)-1} : ligne hors titre : {ligne_hors_titre}")
-
         ligne_hors_titre = ligne[longueur_titre:len(ligne)]
         print(f"ligne_hors_titre : {ligne_hors_titre}")
 
+        full_principal, patronyme_principal, prenom_principal = "", "", ""
+        full_principal = trim_string(ligne_hors_titre,"","  ")
+        print(f"full_principal : **{full_principal}**")
+        patronyme_principal = get_majuscules(full_principal)
+        print(f"patronyme_principal : **{patronyme_principal}**")
+        prenom_principal = get_minuscules(full_principal)
+        print(f"prenom_principal : **{prenom_principal}**")
 
-        principal_full = trim_string(ligne_hors_titre,"","  ")
-        print(f"principal_full : **{principal_full}**")
+        full_naissance, patronyme_naissance, prenom_naissance = -1, -1, -1
+        full_naissance = trim_string(ligne_hors_titre,"  né","  ")
+        if full_naissance != -1:
+            if full_naissance[:5] != "  né " and full_naissance[:6] != "  née ": full_naissance = -1
+            if full_naissance[:5] == "  né ": full_naissance = full_naissance[5:]
+            if full_naissance[:6] == "  née ": full_naissance = full_naissance[6:]
+            print(f"full_naissance : **{full_naissance}**")
+            patronyme_naissance = get_majuscules(full_naissance)
+            #if patronyme_naissance != -1: print(f"patronyme_naissance : **{patronyme_naissance}**")
+            print(f"patronyme_naissance : **{patronyme_naissance}**")
+            prenom_naissance = get_minuscules(full_naissance)
+            #if prenom_naissance != -1: print(f"prenom_naissance : **{prenom_naissance}**")
+            print(f"prenom_naissance : **{prenom_naissance}**")
 
-        naissance_full = trim_string(ligne_hors_titre,"  né","  ")
-        if naissance_full != -1:
-            if naissance_full[:5] != "  né " and naissance_full[:6] != "  née ": naissance_full = -1
-            if naissance_full[:5] == "  né ": naissance_full = naissance_full[5:]
-            if naissance_full[:6] == "  née ": naissance_full = naissance_full[6:]
-        print(f"naissance_full : **{naissance_full}**")
+        full_pseudo, patronyme_pseudo, prenom_pseudo = -1, -1, -1
+        full_pseudo = trim_string(ligne_hors_titre,"  dit","  ")
+        print(f"full_pseudo : **{full_pseudo}**")
+        if full_pseudo != -1:
+            if full_pseudo[:6] != "  dit " and full_pseudo[:7] != "  dite ": full_pseudo = -1
+            if full_pseudo[:6] == "  dit ": full_pseudo = full_pseudo[6:]
+            if full_pseudo[:7] == "  dite ": full_pseudo = full_pseudo[7:]
+            print(f"full_pseudo : **{full_pseudo}**")
+            patronyme_pseudo = get_majuscules(full_pseudo)
+            #if patronyme_pseudo != -1: print(f"patronyme_pseudo : **{patronyme_pseudo}**")
+            print(f"patronyme_pseudo : **{patronyme_pseudo}**")
+            prenom_pseudo = get_minuscules(full_pseudo)
+            #if prenom_pseudo != -1: print(f"prenom_pseudo : **{prenom_pseudo}**")
+            print(f"prenom_pseudo : **{prenom_pseudo}**")
 
-        pseudo_full = trim_string(ligne_hors_titre,"  dit","  ")
-        if pseudo_full != -1:
-            if pseudo_full[:6] != "  dit " and pseudo_full[:7] != "  dite ": pseudo_full = -1
-            if pseudo_full[:6] == "  dit ": pseudo_full = pseudo_full[6:]
-            if pseudo_full[:7] == "  dite ": pseudo_full = pseudo_full[7:]
-        print(f"pseudo_full : **{pseudo_full}**")
+        #combinaisons
+        if prenom_principal != -1 and patronyme_principal != -1:
+            personne_listee.append(prenom_principal + " " + patronyme_principal)
+            if prenom_naissance != -1 and patronyme_naissance != -1:
+                personne_listee.append(prenom_naissance + " " + patronyme_naissance)
+            if prenom_naissance == -1 and patronyme_naissance != -1:
+                personne_listee.append(prenom_principal + " " + patronyme_naissance)
+            if prenom_naissance != -1 and patronyme_naissance == -1:
+                personne_listee.append(prenom_naissance + " " + patronyme_principal)
+            if prenom_pseudo != -1 and patronyme_pseudo != -1:
+                personne_listee.append(prenom_pseudo + " " + patronyme_pseudo)
+            if prenom_pseudo == -1 and patronyme_pseudo != -1:
+                personne_listee.append(prenom_principal + " " + patronyme_pseudo)
+                personne_listee.append(patronyme_pseudo)
+                if prenom_naissance != -1:
+                    personne_listee.append(prenom_naissance + " " + patronyme_pseudo)
+            if prenom_pseudo != -1 and patronyme_pseudo == -1:
+                personne_listee.append(prenom_pseudo + " " + patronyme_principal)
+                personne_listee.append(prenom_pseudo)
+                if patronyme_naissance != -1:
+                    personne_listee.append(prenom_pseudo + " " + patronyme_naissance)
 
-
-        #patronyme_avant_double_espace
-        fin_patronyme_avant_double_espace = 0
-        while not filedata[xxx[rang_personne]+offset+longueur_titre+fin_patronyme_avant_double_espace:xxx[rang_personne]+offset+longueur_titre+fin_patronyme_avant_double_espace+1].islower():
-            fin_patronyme_avant_double_espace += 1
-        fin_patronyme_avant_double_espace -= 2
-        patronyme_avant_double_espace = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+longueur_titre+fin_patronyme_avant_double_espace]
-        print(f"patronyme_avant_double_espace : **{patronyme_avant_double_espace}**")
-
-        #naissance
-        fin_naissance = 0
-        "  né"
-
-        #prenom_avant_double_espace
-        double_espace_suivant = get_double_espace_suivant(filedata,xxx,rang_personne,offset,longueur_titre)
-        if debug: print(f"double_espace_suivant : {double_espace_suivant}")
-        prenom_avant_double_espace = filedata[xxx[rang_personne]+offset+longueur_titre+fin_patronyme_avant_double_espace+1:xxx[rang_personne]+offset+longueur_titre+double_espace_suivant]
-        print(f"prenom_avant_double_espace : **{prenom_avant_double_espace}**")
-
-        #patronyme_pseudo
-        #patronyme_naissance
-        #prenom_pseudo
-        #prenom_naissance
-
-        nom_complet = patronyme_avant_double_espace
-        prenom = prenom_avant_double_espace
-
-
-
-    if debug: print(f"nom complet = {nom_complet}")
-    print(f"{rang_personne} / {len(xxx)-1} : nom complet = {nom_complet}") #nom complet = Mme Dupont, née Durant
-    if nom_complet.find(",") == -1:
-        nom = nom_complet
-    else:
-        nom = nom_complet[0:nom_complet.find(",")]
-    if debug: print("nom =", nom) #nom = Dupont
-    personne_listee.append(prenom + " " + nom)
-    if debug: print(f"personne_listee = {personne_listee[0]}") #personne_listee = Jeanne Dupont
-    #Recherche d'autres alias à rechercher sur wikidata
-    nom_de_naissance = ""
-    if nom_complet.find(", né ") != -1:
-        nom_de_naissance = nom_complet[nom_complet.find(", né ")+5:len(nom_complet)]
-        if debug: print(f"nom_de_naissance = {nom_de_naissance}")
-        personne_listee.append(prenom + " " + nom_de_naissance)
-    if nom_complet.find(", née ") != -1:
-        nom_de_naissance = nom_complet[nom_complet.find(", née ")+6:len(nom_complet)]
-        if debug: print(f"nom_de_naissance = {nom_de_naissance}")
-        personne_listee.append(prenom + " " + nom_de_naissance) #Jeanne Durant
-    if prenoms.find(" dit ") != -1:
-        prenom_d_usage = prenoms[prenoms.find(" dit ")+5:len(prenoms)]
-        if debug: print(f"prenom_d_usage = {prenom_d_usage}")
-        personne_listee.append(prenom_d_usage + " " + nom)
-        if nom_complet.find(", né ") != -1:
-            nom_de_naissance = nom_complet[nom_complet.find(", né ")+5:len(nom_complet)]
-            if debug: print(f"nom_de_naissance = {nom_de_naissance}")
-            personne_listee.append(prenom + " " + nom_de_naissance)
-        if nom_complet.find(", née ") != -1:
-            nom_de_naissance = nom_complet[nom_complet.find(", née ")+6:len(nom_complet)]
-            if debug: print(f"nom_de_naissance = {nom_de_naissance}")
-            personne_listee.append(prenom_d_usage + " " + nom_de_naissance)
-    if prenoms.find(" dite ") != -1:
-        prenom_d_usage = prenoms[prenoms.find(" dite ")+6:len(prenoms)]
-        if debug: print(f"prenom_d_usage = {prenom_d_usage}")
-        personne_listee.append(prenom_d_usage + " " + nom) #Jeannine Dupont
-        if nom_complet.find(", né ") != -1:
-            nom_de_naissance = nom_complet[nom_complet.find(", né ")+5:len(nom_complet)]
-            if debug: print(f"nom_de_naissance = {nom_de_naissance}")
-            personne_listee.append(prenom + " " + nom_de_naissance)
-        if nom_complet.find(", née ") != -1:
-            nom_de_naissance = nom_complet[nom_complet.find(", née ")+6:len(nom_complet)]
-            if debug: print(f"nom_de_naissance = {nom_de_naissance}")
-            personne_listee.append(prenom_d_usage + " " + nom_de_naissance) #Jeannine Durant
     return personne_listee
 
 def trim_string(texte="", texte_debut="", texte_fin=""):
-    #if texte_debut == "": return -1
     position_debut = texte.find(texte_debut)
     if position_debut == -1: return -1
-    position_fin = texte[position_debut+1:].find(texte_fin)
+    position_fin = texte[position_debut+len(texte_debut)+1:].find(texte_fin)
     if position_fin == -1 or position_fin == 0:
         position_fin = len(texte)
     else:
-        position_fin = position_debut+1 + position_fin
+        position_fin = position_debut+len(texte_debut)+1 + position_fin
     return texte[position_debut:position_fin]
+
+def get_majuscules(texte=""):
+    # retourne les mots précédents le 1er mot avec des minuscules
+    fin_majuscules = 0
+    while not texte[fin_majuscules:fin_majuscules+1].islower():
+        fin_majuscules += 1
+        if fin_majuscules == len(texte) + 1: return texte
+    if fin_majuscules == 0: return -1
+    if fin_majuscules == 1: return -1
+    return texte[:fin_majuscules-2]
+
+def get_minuscules(texte=""):
+    # retourne les mots précédents le dernier mot avec des minuscules
+    fin_majuscules = 0
+    while not texte[fin_majuscules:fin_majuscules+1].islower():
+        fin_majuscules += 1
+        if fin_majuscules == len(texte) + 1: return -1
+    if fin_majuscules == 0: return texte
+    if fin_majuscules == 1: return texte
+    return texte[fin_majuscules-1:]
 
 def get_id(data1,rang_personne_Q):
     try:
