@@ -234,6 +234,7 @@ def check_retour_a_la_ligne(filedata,xxx):
     #xxx = [value for value in xxx if value != "ko"]
     xxx = [value for value in xxx if value not in valeurs_a_suppr]
     if debug: print(f"xxx après check_retour_a_la_ligne : {xxx}")
+    print("==================================================")
     return xxx
 
 def get_nom(filedata,xxx,rang_personne,offset,ordre):
@@ -244,7 +245,7 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
     longueur_ligne_avant_remplacement = len(ligne)
     ligne = ligne.replace("&nbsp;"," ")
     ligne = ligne.replace(","," ")
-    print(f"ligne après modif : {ligne}")
+    print(f"ligne : {ligne}")
     if debug: print(f"zone avant modif : {filedata[xxx[rang_personne]+offset-10:xxx[rang_personne]+offset+150]}")
     filedata=filedata[:xxx[rang_personne]+offset] + ligne + filedata[xxx[rang_personne]+offset+longueur_ligne_avant_remplacement:]
     if debug: print(f"zone après modif : {filedata[xxx[rang_personne]+offset-10:xxx[rang_personne]+offset+150]}")
@@ -338,44 +339,57 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
 
     if ordre == "AL":
         ligne_hors_titre = ligne[longueur_titre:len(ligne)]
-        print(f"ligne_hors_titre : {ligne_hors_titre}")
+        #print(f"ligne_hors_titre : {ligne_hors_titre}")
+        ligne_hors_titre = clean_espaces(ligne_hors_titre)
+        #print(f"ligne_hors_titre : {ligne_hors_titre}")
 
-        full_principal, patronyme_principal, prenom_principal = "", "", ""
+        full_principal, patronyme_principal, prenom_principal = -1, -1, -1
         full_principal = trim_string(ligne_hors_titre,"","  ")
-        print(f"full_principal : **{full_principal}**")
+        full_principal = clean_dit_ne(full_principal)
+        #print(f"full_principal : **{full_principal}**")
         patronyme_principal = get_majuscules(full_principal)
-        print(f"patronyme_principal : **{patronyme_principal}**")
-        prenom_principal = get_minuscules(full_principal)
-        print(f"prenom_principal : **{prenom_principal}**")
+        #print(f"patronyme_principal : **{patronyme_principal}**")
+        #pour limiter les dégâts si double espace entre nom et prénom (ex: à la fin du MICA2113502A)
+        if get_majuscules(full_principal) == full_principal:
+            print("Double espace après le nom de famille. Passage en mode dégradé.") #cherche le 1er mot avec une majuscule puis une minuscule
+            ligne_split = ligne_hors_titre[len(full_principal):].split()
+            prenom_principal = ""
+            #print(ligne_split)
+            for mot in ligne_split:
+                if len(mot) > 1:
+                    if mot[0].isupper() and mot[1].islower():
+                        prenom_principal = mot
+                        break
+        else:
+            prenom_principal = get_minuscules(full_principal)
+        #print(f"prenom_principal : **{prenom_principal}**")
 
         full_naissance, patronyme_naissance, prenom_naissance = -1, -1, -1
-        full_naissance = trim_string(ligne_hors_titre,"  né","  ")
+        full_naissance = trim_string(ligne_hors_titre," né","  ")
         if full_naissance != -1:
-            if full_naissance[:5] != "  né " and full_naissance[:6] != "  née ": full_naissance = -1
-            if full_naissance[:5] == "  né ": full_naissance = full_naissance[5:]
-            if full_naissance[:6] == "  née ": full_naissance = full_naissance[6:]
-            print(f"full_naissance : **{full_naissance}**")
+            if full_naissance[:4] != " né " and full_naissance[:5] != " née ": full_naissance = -1
+        if full_naissance != -1:
+            if full_naissance[:4] == " né ": full_naissance = full_naissance[4:]
+            if full_naissance[:5] == " née ": full_naissance = full_naissance[5:]
+            #print(f"full_naissance : **{full_naissance}**")
             patronyme_naissance = get_majuscules(full_naissance)
-            #if patronyme_naissance != -1: print(f"patronyme_naissance : **{patronyme_naissance}**")
-            print(f"patronyme_naissance : **{patronyme_naissance}**")
+            #print(f"patronyme_naissance : **{patronyme_naissance}**")
             prenom_naissance = get_minuscules(full_naissance)
-            #if prenom_naissance != -1: print(f"prenom_naissance : **{prenom_naissance}**")
-            print(f"prenom_naissance : **{prenom_naissance}**")
+            #print(f"prenom_naissance : **{prenom_naissance}**")
 
         full_pseudo, patronyme_pseudo, prenom_pseudo = -1, -1, -1
-        full_pseudo = trim_string(ligne_hors_titre,"  dit","  ")
-        print(f"full_pseudo : **{full_pseudo}**")
+        full_pseudo = trim_string(ligne_hors_titre," dit","  ")
+        #print(f"full_pseudo : **{full_pseudo}**")
         if full_pseudo != -1:
-            if full_pseudo[:6] != "  dit " and full_pseudo[:7] != "  dite ": full_pseudo = -1
-            if full_pseudo[:6] == "  dit ": full_pseudo = full_pseudo[6:]
-            if full_pseudo[:7] == "  dite ": full_pseudo = full_pseudo[7:]
-            print(f"full_pseudo : **{full_pseudo}**")
+            if full_pseudo[:5] != " dit " and full_pseudo[:6] != " dite ": full_pseudo = -1
+        if full_pseudo != -1:
+            if full_pseudo[:5] == " dit ": full_pseudo = full_pseudo[5:]
+            if full_pseudo[:6] == " dite ": full_pseudo = full_pseudo[6:]
+            #print(f"full_pseudo : **{full_pseudo}**")
             patronyme_pseudo = get_majuscules(full_pseudo)
-            #if patronyme_pseudo != -1: print(f"patronyme_pseudo : **{patronyme_pseudo}**")
-            print(f"patronyme_pseudo : **{patronyme_pseudo}**")
+            #print(f"patronyme_pseudo : **{patronyme_pseudo}**")
             prenom_pseudo = get_minuscules(full_pseudo)
-            #if prenom_pseudo != -1: print(f"prenom_pseudo : **{prenom_pseudo}**")
-            print(f"prenom_pseudo : **{prenom_pseudo}**")
+            #print(f"prenom_pseudo : **{prenom_pseudo}**")
 
         #combinaisons
         if prenom_principal != -1 and patronyme_principal != -1:
@@ -412,24 +426,49 @@ def trim_string(texte="", texte_debut="", texte_fin=""):
     return texte[position_debut:position_fin]
 
 def get_majuscules(texte=""):
-    # retourne les mots précédents le 1er mot avec des minuscules
-    fin_majuscules = 0
-    while not texte[fin_majuscules:fin_majuscules+1].islower():
-        fin_majuscules += 1
-        if fin_majuscules == len(texte) + 1: return texte
-    if fin_majuscules == 0: return -1
-    if fin_majuscules == 1: return -1
-    return texte[:fin_majuscules-2]
+    # retourne les mots précédents le 1er double espace, MAJmin, né ou dit
+    if texte == "": return -1
+    debutMAJmin = 0
+    while not (texte[debutMAJmin:debutMAJmin+1].isupper() and texte[debutMAJmin+1:debutMAJmin+2].islower()):
+        debutMAJmin += 1
+        if debutMAJmin == len(texte) - 1:
+            debutMAJmin = -1
+            break
+    if debutMAJmin == 0: return -1
+    if debutMAJmin == -1: debutMAJmin = 0 #pour faire -1 ci-dessous
+    fins = [texte.find("  "), debutMAJmin-1, texte.find(" né"), texte.find(" dit")]
+    fins = [fin for fin in fins if fin != -1] #list comprehension
+    #print(fins)
+    if fins == []: return texte
+    return texte[:min(fins)]
 
 def get_minuscules(texte=""):
-    # retourne les mots précédents le dernier mot avec des minuscules
-    fin_majuscules = 0
-    while not texte[fin_majuscules:fin_majuscules+1].islower():
-        fin_majuscules += 1
-        if fin_majuscules == len(texte) + 1: return -1
-    if fin_majuscules == 0: return texte
-    if fin_majuscules == 1: return texte
-    return texte[fin_majuscules-1:]
+    # retourne les mots à partir du 1er mot avec 1 majuscule puis une minuscule
+    if texte == "": return -1
+    debutMAJmin = 0
+    while not (texte[debutMAJmin:debutMAJmin+1].isupper() and texte[debutMAJmin+1:debutMAJmin+2].islower()):
+        debutMAJmin += 1
+        if debutMAJmin == len(texte) - 1: return -1
+    return texte[debutMAJmin:]
+
+def clean_espaces(texte=""):
+    #retire les espaces éventuels au début
+    if type(texte) != str : return -1
+    if texte == "" : return ""
+    fin_espace = 0
+    while texte[fin_espace:fin_espace+1] == " ":
+        fin_espace += 1
+        if fin_espace == len(texte) + 1: return ""
+    return texte[fin_espace:]
+
+def clean_dit_ne(texte=""):
+    #retire les dit ou né et ce qui suit
+    if type(texte) != str : return -1
+    if texte.find(" dit") != -1:
+        texte = texte[:texte.find(" dit")-1]
+    if texte.find(" né") != -1:
+        texte = texte[:texte.find(" né")-1]
+    return texte
 
 def get_id(data1,rang_personne_Q):
     try:
@@ -689,16 +728,16 @@ def suppression_p(filedata,ordre):
     if ordre == "AL":
         for m in re.finditer("<b>au grade d", filedata):
             xxxgrade.append(m.start())
-    print(xxxgrade)
+    #print(xxxgrade)
     if ordre == "AL":
         filedata = filedata.replace("""<p style="text-align:left;">""","<p>")
     offset = 0
     for paragraphe in xxxgrade:
         emplacement_p = filedata[paragraphe-offset:].find("<p>") #position dans l'extrait
         emplacement_p = emplacement_p + paragraphe - offset #position globale
-        print(f"emplacement_p-5 : {filedata[emplacement_p-5:emplacement_p+30]}")
+        #print(f"emplacement_p-5 : {filedata[emplacement_p-5:emplacement_p+30]}")
         filedata = filedata[:emplacement_p] + filedata[emplacement_p+3:]
-        print(f"emplacement_p-5 : {filedata[emplacement_p-5:emplacement_p+30]}")
+        #print(f"emplacement_p-5 : {filedata[emplacement_p-5:emplacement_p+30]}")
         offset = offset + 3
     return filedata
 
