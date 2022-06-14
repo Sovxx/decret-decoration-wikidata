@@ -242,16 +242,19 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
     #remplacement des &nbsp; dans la ligne
     ligne = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+get_saut_suivant(filedata,xxx,rang_personne,offset)]
     if debug: print(f"ligne avant modif : {ligne}")
-    longueur_ligne_avant_remplacement = len(ligne)
-    ligne = ligne.replace("&nbsp;"," ")
-    ligne = ligne.replace(","," ")
-    print(f"ligne : {ligne}")
-    if debug: print(f"zone avant modif : {filedata[xxx[rang_personne]+offset-10:xxx[rang_personne]+offset+150]}")
-    filedata=filedata[:xxx[rang_personne]+offset] + ligne + filedata[xxx[rang_personne]+offset+longueur_ligne_avant_remplacement:]
-    if debug: print(f"zone après modif : {filedata[xxx[rang_personne]+offset-10:xxx[rang_personne]+offset+150]}")
+
+    if ordre == "AL":
+        longueur_ligne_avant_remplacement = len(ligne)
+        ligne = ligne.replace("&nbsp;"," ")
+        ligne = ligne.replace(","," ")
+        if debug: print(f"zone avant modif : {filedata[xxx[rang_personne]+offset-10:xxx[rang_personne]+offset+150]}")
+        filedata=filedata[:xxx[rang_personne]+offset] + ligne + filedata[xxx[rang_personne]+offset+longueur_ligne_avant_remplacement:]
+        if debug: print(f"zone après modif : {filedata[xxx[rang_personne]+offset-10:xxx[rang_personne]+offset+150]}")
+
+    print(f"{rang_personne} / {len(xxx)-1} : {ligne}")
 
     personne_listee = []
-    if debug: print(f"{xxx[rang_personne]} + {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}") #105412 : Mme Dupont, née Durant (Jeanne dite Jeannine, Marie, Hélène), dirigeante d'entrep
+    if debug: print(f"{xxx[rang_personne]} + {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+1000]}") #105412 : Mme Dupont, née Durant (Jeanne dite Jeannine, Marie, Hélène), dirigeante d'entrep
 
     if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+4] == "Mme ":
         if debug: print("titre = Mme")
@@ -277,11 +280,11 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
     if debug: print(f"longueur_titre = {longueur_titre}")
 
     if ordre == "LH" or ordre == "ONM":
-        ouverture_parenthese = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("(")
-        fermeture_parenthese = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find(")")
+        ouverture_parenthese = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+1000].find("(")
+        fermeture_parenthese = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+1000].find(")")
         prenoms = filedata[xxx[rang_personne]+offset+ouverture_parenthese+1:xxx[rang_personne]+offset+fermeture_parenthese]
 
-        print(f"{rang_personne} / {len(xxx)-1} : prénoms = {prenoms}") #prénoms = Jeanne dite Jeannine, Marie, Hélène
+        if debug: print(f"{rang_personne} / {len(xxx)-1} : prénoms = {prenoms}") #prénoms = Jeanne dite Jeannine, Marie, Hélène
         if prenoms.find(",") == -1: prenom = prenoms
         else:
             prenom = prenoms[0:prenoms.find(",")]
@@ -293,8 +296,7 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
 
         nom_complet = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+ouverture_parenthese-1]
 
-        if debug: print(f"nom complet = {nom_complet}")
-        print(f"{rang_personne} / {len(xxx)-1} : nom complet = {nom_complet}") #nom complet = Mme Dupont, née Durant
+        if debug: print(f"{rang_personne} / {len(xxx)-1} : nom complet = {nom_complet}") #nom complet = Mme Dupont, née Durant
         if nom_complet.find(",") == -1:
             nom = nom_complet
         else:
