@@ -44,6 +44,7 @@ def definition_NOR(filedata):
         NOR = filedata[filedata.find("NOR  :")+7:filedata.find("NOR  :")+7+12] #récupère "MICA2113502A" dans "NOR  : MICA2113502A"
     if filedata.find("NOR :") != -1:
         NOR = filedata[filedata.find("NOR :")+6:filedata.find("NOR :")+6+12] #récupère "PRER2104806D" dans "NOR : PRER2104806D"
+    if NOR.find(" ") != -1: NOR = "" #un NOR n'est pas censé contenir d'espace
     print(f"Identifiant NOR du décret ou de l'arrêté ?   Par défaut (reconnu dans in.html) : {NOR}")
     NOR = input() or NOR
     print(f"NOR = {NOR}")
@@ -710,10 +711,20 @@ def suppression_debut(filedata,ordre):
     #supprime tout avant le "<p class="excerpt">"
     position_p = filedata.rfind("""<p class="excerpt">""")
     filedata = filedata[position_p:]
+
     #supprime tout après le 1er "</div>" après "Bulletin officiel" (à la fin de l'arrêté)
     position_bulletin = filedata.rfind("""Bulletin officiel""")
-    position_div = filedata[position_bulletin:].find("""</div>""")
-    filedata = filedata[:position_bulletin+position_div+6]
+    if position_bulletin != -1:
+        position_div = filedata[position_bulletin:].find("""</div>""")
+        filedata = filedata[:position_bulletin+position_div+6]
+    else:
+        #supprime tout après le 1er "</div>" situé avant "À télécharger</h2>" (à la fin de l'arrêté)
+        position_telecharger = filedata.find("""À télécharger</h2>""")
+        if position_telecharger != -1:
+            position_div = filedata[:position_telecharger].rfind("""</div>""")
+            filedata = filedata[:position_div+6]
+        else:
+            print("La fin n'a pas pu être nettoyée")
     #mise en forme
     filedata = """<html><head><link rel="stylesheet" href="style.css"></head>""" + filedata + """</html>"""
     return filedata
