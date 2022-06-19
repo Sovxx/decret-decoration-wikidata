@@ -370,10 +370,11 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
         full_naissance, patronyme_naissance, prenom_naissance = -1, -1, -1
         full_naissance = trim_string(ligne_hors_titre," né","  ")
         if full_naissance != -1:
-            if full_naissance[:4] != " né " and full_naissance[:5] != " née ": full_naissance = -1
+            if full_naissance[:4] != " né " and full_naissance[:5] != " née " and full_naissance[:7] != " né(e) ": full_naissance = -1
         if full_naissance != -1:
             if full_naissance[:4] == " né ": full_naissance = full_naissance[4:]
             if full_naissance[:5] == " née ": full_naissance = full_naissance[5:]
+            if full_naissance[:7] == " né(e) ": full_naissance = full_naissance[7:]
             #print(f"full_naissance : **{full_naissance}**")
             patronyme_naissance = get_majuscules(full_naissance)
             #print(f"patronyme_naissance : **{patronyme_naissance}**")
@@ -754,6 +755,27 @@ def suppression_p(filedata,ordre):
         offset = offset + 3
     return filedata
 
+def cleanup_tr(filedata, ordre):
+    if ordre == "AL" and True:
+        while filedata.find("""<tr>""") != -1:
+            debut_tr = filedata.find("""<tr>""")
+            fin_tr = filedata.find("""</tr>""")
+            filedata_partiel = filedata[debut_tr:fin_tr+5]
+            print(f"filedata_partiel : {filedata_partiel}")
+            while filedata_partiel.find("<") != -1:
+                debut_balise = filedata_partiel.find("<")
+                fin_balise = filedata_partiel.find(">")
+                if filedata_partiel[debut_balise:debut_balise+31] == """<p style="text-align:justify;">""": #pour bien séparer les professions
+                    filedata_partiel = filedata_partiel[:debut_balise] + "   " + filedata_partiel[fin_balise+1:]
+                else:
+                    if filedata_partiel[debut_balise:debut_balise+2] == "<p":
+                        filedata_partiel = filedata_partiel[:debut_balise] + " " + filedata_partiel[fin_balise+1:]
+                    else:
+                        filedata_partiel = filedata_partiel[:debut_balise] + filedata_partiel[fin_balise+1:]
+            print(f"filedata_partiel : {filedata_partiel}")
+            filedata = filedata[:debut_tr] + filedata_partiel + "<br>" + filedata[fin_tr+5:]
+    return filedata
+
 def main():
 
     print("OUVERTURE DU FICHIER \"in.html\"...")
@@ -771,6 +793,9 @@ def main():
 
     print("MISE EN FORME DES TITRES DU DECRET...")
     filedata = mise_en_forme_titres(filedata, ordre)
+
+    print("PRE-NETTOYAGE...")
+    filedata = cleanup_tr(filedata, ordre)
 
     print("RECUPERATION DES LIGNES ASSOCIEES A CHAQUE PERSONNE...")
     print("==================================================")
