@@ -39,11 +39,12 @@ decoration_img = ["https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Ord
     "https://upload.wikimedia.org/wikipedia/commons/9/9c/Chevalier_arts_et_lettres.jpg"]
 
 def definition_NOR(filedata):
-    NOR = ""
     if filedata.find("NOR  :") != -1:
         NOR = filedata[filedata.find("NOR  :")+7:filedata.find("NOR  :")+7+12] #récupère "MICA2113502A" dans "NOR  : MICA2113502A"
     if filedata.find("NOR :") != -1:
         NOR = filedata[filedata.find("NOR :")+6:filedata.find("NOR :")+6+12] #récupère "PRER2104806D" dans "NOR : PRER2104806D"
+    if filedata.find("NOR :") != -1:
+        NOR = filedata[filedata.find("NOR :")+6:filedata.find("NOR :")+6+12] #contient un NO-BREAK SPACE.......
     if NOR.find(" ") != -1: NOR = "" #un NOR n'est pas censé contenir d'espace
     print(f"Identifiant NOR du décret ou de l'arrêté ?   Par défaut (reconnu dans in.html) : {NOR}")
     NOR = input() or NOR
@@ -348,6 +349,7 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
 
         full_principal, patronyme_principal, prenom_principal = -1, -1, -1
         full_principal = trim_string(ligne_hors_titre,"","  ")
+        #print(f"full_principal : **{full_principal}**")
         full_principal = clean_dit_ne(full_principal)
         #print(f"full_principal : **{full_principal}**")
         patronyme_principal = get_majuscules(full_principal)
@@ -369,6 +371,7 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
 
         full_naissance, patronyme_naissance, prenom_naissance = -1, -1, -1
         full_naissance = trim_string(ligne_hors_titre," né","  ")
+        #print(f"full_naissance : {full_naissance}")
         if full_naissance != -1:
             if full_naissance[:4] != " né " and full_naissance[:5] != " née " and full_naissance[:7] != " né(e) ": full_naissance = -1
         if full_naissance != -1:
@@ -380,6 +383,9 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
             #print(f"patronyme_naissance : **{patronyme_naissance}**")
             prenom_naissance = get_minuscules(full_naissance)
             #print(f"prenom_naissance : **{prenom_naissance}**")
+            #print(f"full_naissance : {full_naissance}")
+            #print(f"patronyme_naissance : {patronyme_naissance}")
+            #print(f"prenom_naissance : {prenom_naissance}")
 
         full_pseudo, patronyme_pseudo, prenom_pseudo = -1, -1, -1
         full_pseudo = trim_string(ligne_hors_titre," dit","  ")
@@ -469,9 +475,9 @@ def clean_dit_ne(texte=""):
     #retire les dit ou né et ce qui suit
     if type(texte) != str : return -1
     if texte.find(" dit") != -1:
-        texte = texte[:texte.find(" dit")-1]
+        texte = texte[:texte.find(" dit")]
     if texte.find(" né") != -1:
-        texte = texte[:texte.find(" né")-1]
+        texte = texte[:texte.find(" né")]
     return texte
 
 def get_id(data1,rang_personne_Q):
@@ -761,7 +767,7 @@ def cleanup_tr(filedata, ordre):
             debut_tr = filedata.find("""<tr>""")
             fin_tr = filedata.find("""</tr>""")
             filedata_partiel = filedata[debut_tr:fin_tr+5]
-            print(f"filedata_partiel : {filedata_partiel}")
+            #print(f"filedata_partiel : {filedata_partiel}")
             while filedata_partiel.find("<") != -1:
                 debut_balise = filedata_partiel.find("<")
                 fin_balise = filedata_partiel.find(">")
@@ -772,7 +778,7 @@ def cleanup_tr(filedata, ordre):
                         filedata_partiel = filedata_partiel[:debut_balise] + " " + filedata_partiel[fin_balise+1:]
                     else:
                         filedata_partiel = filedata_partiel[:debut_balise] + filedata_partiel[fin_balise+1:]
-            print(f"filedata_partiel : {filedata_partiel}")
+            #print(f"filedata_partiel : {filedata_partiel}")
             filedata = filedata[:debut_tr] + filedata_partiel + "<br>" + filedata[fin_tr+5:]
     return filedata
 
