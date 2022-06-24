@@ -39,11 +39,12 @@ decoration_img = ["https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Ord
     "https://upload.wikimedia.org/wikipedia/commons/9/9c/Chevalier_arts_et_lettres.jpg"]
 
 def definition_NOR(filedata):
-    NOR = ""
     if filedata.find("NOR  :") != -1:
         NOR = filedata[filedata.find("NOR  :")+7:filedata.find("NOR  :")+7+12] #récupère "MICA2113502A" dans "NOR  : MICA2113502A"
     if filedata.find("NOR :") != -1:
         NOR = filedata[filedata.find("NOR :")+6:filedata.find("NOR :")+6+12] #récupère "PRER2104806D" dans "NOR : PRER2104806D"
+    if filedata.find("NOR :") != -1:
+        NOR = filedata[filedata.find("NOR :")+6:filedata.find("NOR :")+6+12] #contient un NO-BREAK SPACE.......
     if NOR.find(" ") != -1: NOR = "" #un NOR n'est pas censé contenir d'espace
     print(f"Identifiant NOR du décret ou de l'arrêté ?   Par défaut (reconnu dans in.html) : {NOR}")
     NOR = input() or NOR
@@ -157,8 +158,11 @@ def mise_en_forme_titres(filedata, ordre):
         filedata = filedata.replace("A la dignité de grand’croix", "<b>A la dignité de grand’croix</b> <img src=\"" + decoration_img[10] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
     if ordre == "AL":
         filedata = filedata.replace("au grade de commandeur de l'ordre des Arts et des Lettres", "<b>au grade de commandeur de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade de commandeur de l’ordre des Arts et des Lettres", "<b>au grade de commandeur de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
         filedata = filedata.replace("au grade d'officier de l'ordre des Arts et des Lettres", "<b>au grade d'officier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade d'officier de l’ordre des Arts et des Lettres", "<b>au grade d'officier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
         filedata = filedata.replace("au grade de chevalier de l'ordre des Arts et des Lettres", "<b>au grade de chevalier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade de chevalier de l’ordre des Arts et des Lettres", "<b>au grade de chevalier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
     return filedata
 
 def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
@@ -348,6 +352,7 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
 
         full_principal, patronyme_principal, prenom_principal = -1, -1, -1
         full_principal = trim_string(ligne_hors_titre,"","  ")
+        #print(f"full_principal : **{full_principal}**")
         full_principal = clean_dit_ne(full_principal)
         #print(f"full_principal : **{full_principal}**")
         patronyme_principal = get_majuscules(full_principal)
@@ -369,16 +374,21 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
 
         full_naissance, patronyme_naissance, prenom_naissance = -1, -1, -1
         full_naissance = trim_string(ligne_hors_titre," né","  ")
+        #print(f"full_naissance : {full_naissance}")
         if full_naissance != -1:
-            if full_naissance[:4] != " né " and full_naissance[:5] != " née ": full_naissance = -1
+            if full_naissance[:4] != " né " and full_naissance[:5] != " née " and full_naissance[:7] != " né(e) ": full_naissance = -1
         if full_naissance != -1:
             if full_naissance[:4] == " né ": full_naissance = full_naissance[4:]
             if full_naissance[:5] == " née ": full_naissance = full_naissance[5:]
+            if full_naissance[:7] == " né(e) ": full_naissance = full_naissance[7:]
             #print(f"full_naissance : **{full_naissance}**")
             patronyme_naissance = get_majuscules(full_naissance)
             #print(f"patronyme_naissance : **{patronyme_naissance}**")
             prenom_naissance = get_minuscules(full_naissance)
             #print(f"prenom_naissance : **{prenom_naissance}**")
+            #print(f"full_naissance : {full_naissance}")
+            #print(f"patronyme_naissance : {patronyme_naissance}")
+            #print(f"prenom_naissance : {prenom_naissance}")
 
         full_pseudo, patronyme_pseudo, prenom_pseudo = -1, -1, -1
         full_pseudo = trim_string(ligne_hors_titre," dit","  ")
@@ -468,9 +478,9 @@ def clean_dit_ne(texte=""):
     #retire les dit ou né et ce qui suit
     if type(texte) != str : return -1
     if texte.find(" dit") != -1:
-        texte = texte[:texte.find(" dit")-1]
+        texte = texte[:texte.find(" dit")]
     if texte.find(" né") != -1:
-        texte = texte[:texte.find(" né")-1]
+        texte = texte[:texte.find(" né")]
     return texte
 
 def get_id(data1,rang_personne_Q):
@@ -754,6 +764,29 @@ def suppression_p(filedata,ordre):
         offset = offset + 3
     return filedata
 
+def cleanup_tr(filedata, ordre):
+    if ordre == "AL" and True:
+        while filedata.find("""<tr>""") != -1:
+            debut_tr = filedata.find("""<tr>""")
+            fin_tr = filedata.find("""</tr>""")
+            filedata_partiel = filedata[debut_tr:fin_tr+5]
+            #print(f"filedata_partiel : {filedata_partiel}")
+            while filedata_partiel.find("<") != -1:
+                debut_balise = filedata_partiel.find("<")
+                fin_balise = filedata_partiel.find(">")
+                if filedata_partiel[debut_balise:debut_balise+31] == """<p style="text-align:justify;">""": #pour bien séparer les professions
+                    filedata_partiel = filedata_partiel[:debut_balise] + "   " + filedata_partiel[fin_balise+1:]
+                else:
+                    if filedata_partiel[debut_balise:debut_balise+2] == "<p":
+                        filedata_partiel = filedata_partiel[:debut_balise] + " " + filedata_partiel[fin_balise+1:]
+                    else:
+                        filedata_partiel = filedata_partiel[:debut_balise] + filedata_partiel[fin_balise+1:]
+            #print(f"filedata_partiel : {filedata_partiel}")
+            filedata = filedata[:debut_tr] + filedata_partiel + "<br>" + filedata[fin_tr+5:]
+        while filedata.find("""<table style="width:100%;">""") != -1: #passage supprimé sinon les boutons ne fonctionnent pas (bizarrement)
+            filedata = filedata[:filedata.find("""<table style="width:100%;">""")] + filedata[filedata.find("""<table style="width:100%;">""")+27:]
+    return filedata
+
 def main():
 
     print("OUVERTURE DU FICHIER \"in.html\"...")
@@ -771,6 +804,9 @@ def main():
 
     print("MISE EN FORME DES TITRES DU DECRET...")
     filedata = mise_en_forme_titres(filedata, ordre)
+
+    print("PRE-NETTOYAGE...")
+    filedata = cleanup_tr(filedata, ordre)
 
     print("RECUPERATION DES LIGNES ASSOCIEES A CHAQUE PERSONNE...")
     print("==================================================")
