@@ -158,8 +158,11 @@ def mise_en_forme_titres(filedata, ordre):
         filedata = filedata.replace("A la dignité de grand’croix", "<b>A la dignité de grand’croix</b> <img src=\"" + decoration_img[10] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
     if ordre == "AL":
         filedata = filedata.replace("au grade de commandeur de l'ordre des Arts et des Lettres", "<b>au grade de commandeur de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade de commandeur de l’ordre des Arts et des Lettres", "<b>au grade de commandeur de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
         filedata = filedata.replace("au grade d'officier de l'ordre des Arts et des Lettres", "<b>au grade d'officier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade d'officier de l’ordre des Arts et des Lettres", "<b>au grade d'officier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
         filedata = filedata.replace("au grade de chevalier de l'ordre des Arts et des Lettres", "<b>au grade de chevalier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade de chevalier de l’ordre des Arts et des Lettres", "<b>au grade de chevalier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
     return filedata
 
 def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
@@ -780,6 +783,8 @@ def cleanup_tr(filedata, ordre):
                         filedata_partiel = filedata_partiel[:debut_balise] + filedata_partiel[fin_balise+1:]
             #print(f"filedata_partiel : {filedata_partiel}")
             filedata = filedata[:debut_tr] + filedata_partiel + "<br>" + filedata[fin_tr+5:]
+        while filedata.find("""<table style="width:100%;">""") != -1: #passage supprimé sinon les boutons ne fonctionnent pas (bizarrement)
+            filedata = filedata[:filedata.find("""<table style="width:100%;">""")] + filedata[filedata.find("""<table style="width:100%;">""")+27:]
     return filedata
 
 def main():
