@@ -39,6 +39,7 @@ decoration_img = ["https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Ord
     "https://upload.wikimedia.org/wikipedia/commons/9/9c/Chevalier_arts_et_lettres.jpg"]
 
 def definition_NOR(filedata):
+    NOR = ""
     if filedata.find("NOR  :") != -1:
         NOR = filedata[filedata.find("NOR  :")+7:filedata.find("NOR  :")+7+12] #récupère "MICA2113502A" dans "NOR  : MICA2113502A"
     if filedata.find("NOR :") != -1:
@@ -158,11 +159,15 @@ def mise_en_forme_titres(filedata, ordre):
         filedata = filedata.replace("A la dignité de grand’croix", "<b>A la dignité de grand’croix</b> <img src=\"" + decoration_img[10] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
     if ordre == "AL":
         filedata = filedata.replace("au grade de commandeur de l'ordre des Arts et des Lettres", "<b>au grade de commandeur de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade de commandeur de l’ordre des Arts et des Lettres", "<b>au grade de commandeur de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade de commandeur de l’ordre des Arts et des Lettres", "<b>au grade de commandeur de l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade de commandeur dans l'ordre des Arts et des Lettres", "<b>au grade de commandeur dans l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
         filedata = filedata.replace("au grade d'officier de l'ordre des Arts et des Lettres", "<b>au grade d'officier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade d'officier de l’ordre des Arts et des Lettres", "<b>au grade d'officier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade d'officier de l’ordre des Arts et des Lettres", "<b>au grade d'officier de l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade d'officier dans l'ordre des Arts et des Lettres", "<b>au grade d'officier dans l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade d’officier dans l’ordre des Arts et des Lettres", "<b>au grade d’officier dans l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
         filedata = filedata.replace("au grade de chevalier de l'ordre des Arts et des Lettres", "<b>au grade de chevalier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade de chevalier de l’ordre des Arts et des Lettres", "<b>au grade de chevalier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade de chevalier de l’ordre des Arts et des Lettres", "<b>au grade de chevalier de l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade de chevalier dans l'ordre des Arts et des Lettres", "<b>au grade de chevalier dans l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
     return filedata
 
 def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
@@ -212,7 +217,7 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
     return filedata
 
 def construction_index(filedata):
-    prefixes = ["M\. ", "Mme ","M\.\&nbsp\;", "Mme\&nbsp\;"]
+    prefixes = ["M\. ", "Mme ","M\.\&nbsp\;", "Mme\&nbsp\;", "<li>Monsieur", "<li>Madame"]
     xxx = [] #tableau des chaînes de caractères correspondante aux passages du décret concernant chaque personne
     for prefixe in prefixes:
         for m in re.finditer(prefixe, filedata):
@@ -229,7 +234,7 @@ def check_retour_a_la_ligne(filedata,xxx):
     valeurs_a_suppr = []
     for i in range(len(xxx)-1):
         if debug: print(f"Vérification couple {i}/{i+1} : {xxx[i]}/{xxx[i+1]}")
-        if max(filedata[xxx[i]:xxx[i+1]].find("<br>"),filedata[xxx[i]:xxx[i+1]].find("<br/>"),filedata[xxx[i]:xxx[i+1]].find("<p"),filedata[xxx[i]:xxx[i+1]].find("</p>")) == -1:
+        if max(filedata[xxx[i]:xxx[i+1]].find("<br>"),filedata[xxx[i]:xxx[i+1]].find("<br/>"),filedata[xxx[i]:xxx[i+1]].find("<p"),filedata[xxx[i]:xxx[i+1]].find("</p>"),filedata[xxx[i]:xxx[i+1]].find("</li>")) == -1:
             print(f"position {xxx[i+1]} supprimée de l'index car pas de retour à la ligne")
             print(f"filedata[{xxx[i]}:{xxx[i+1]}+10]) : {filedata[xxx[i]:xxx[i+1]+10]}")
             #xxx[i+1] = "ko"
@@ -279,9 +284,12 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
     if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+7] == "Mme    ":
         if debug: print("titre = Mme")
         longueur_titre = 7
-    if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+8] == "M.&nbsp;":
-        if debug: print("titre = M.")
-        longueur_titre = 8
+    if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+12] == "<li>Monsieur":
+        if debug: print("titre = Monsieur")
+        longueur_titre = 12
+    if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+10] == "<li>Madame":
+        if debug: print("titre = Madame")
+        longueur_titre = 10
     if debug: print(f"longueur_titre = {longueur_titre}")
 
     if ordre == "LH" or ordre == "ONM":
@@ -357,6 +365,7 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
         #print(f"full_principal : **{full_principal}**")
         patronyme_principal = get_majuscules(full_principal)
         #print(f"patronyme_principal : **{patronyme_principal}**")
+
         #pour limiter les dégâts si double espace entre nom et prénom (ex: à la fin du MICA2113502A)
         if get_majuscules(full_principal) == full_principal:
             print("Double espace après le nom de famille. Passage en mode dégradé.") #cherche le 1er mot avec une majuscule puis une minuscule
@@ -371,6 +380,15 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
         else:
             prenom_principal = get_minuscules(full_principal)
         #print(f"prenom_principal : **{prenom_principal}**")
+
+        #mode très dégradé
+        if len(ligne) > 4:
+            if ligne[0:4] == "<li>":
+                print("Vieil arrêté. Passage en mode très dégradé.") #jusqu'au dernier mot en majuscules
+                if get_position_fin_majuscules(full_principal) != -1:
+                    full_principal = ligne_hors_titre[:get_position_fin_majuscules(full_principal)]
+                    #print(f"full_principal : **{full_principal}**")
+                    personne_listee.append(full_principal)
 
         full_naissance, patronyme_naissance, prenom_naissance = -1, -1, -1
         full_naissance = trim_string(ligne_hors_titre," né","  ")
@@ -454,6 +472,13 @@ def get_majuscules(texte=""):
     #print(fins)
     if fins == []: return texte
     return texte[:min(fins)]
+
+def get_position_fin_majuscules(texte=""):
+    # retourne la position juste après la fin du dernier mot tout en majuscules
+    if len(texte) < 2: return -1
+    fins = [position for position in range(1,len(texte)) if (texte[position].isupper() and texte[position-1].isupper())] #list comprehension
+    if len(fins) == 0: return -1
+    return max(fins)+1
 
 def get_minuscules(texte=""):
     # retourne les mots à partir du 1er mot avec 1 majuscule puis une minuscule
@@ -602,7 +627,9 @@ def get_saut_suivant(filedata,xxx,rang_personne,offset):
     if brslash_suivant == -1: brslash_suivant = 10000
     p_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("</p>")
     if p_suivant == -1: p_suivant = 10000
-    saut_suivant = min(br_suivant,brslash_suivant,p_suivant)
+    li_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("</li>")
+    if li_suivant == -1: li_suivant = 10000
+    saut_suivant = min(br_suivant,brslash_suivant,p_suivant,li_suivant)
     if debug: print(f"saut_suivant : {saut_suivant}")
     return saut_suivant
 
@@ -642,7 +669,7 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simpl
                 bold1 = "<b>"
                 bold2 = "</b>"
             if ordre == "AL":
-                style_bolded = """class="bolded" """
+                style_bolded = " class=\"bolded\""
         injection_str = injection_str + bold1 + " <form onclick=\"QS_ajout_ligne('" + id + "|P166|" + decoration_Q[QS_compteur_bouton_decoration] + "|P585|" + date_decret_ISO_wiki + "|S464|','" + NOR + "','" + id + decoration_Q[QS_compteur_bouton_decoration] + \
             "')\"><input type=\"button\"" + style_bolded + " id=\"" + id + decoration_Q[QS_compteur_bouton_decoration] + "\" value=\"" + decoration_nom[QS_compteur_bouton_decoration] + "\"></form>" + bold2
     #ajout des éventuelles décorations existantes
@@ -765,7 +792,7 @@ def suppression_p(filedata,ordre):
     return filedata
 
 def cleanup_tr(filedata, ordre):
-    if ordre == "AL" and True:
+    if ordre == "AL":
         while filedata.find("""<tr>""") != -1:
             debut_tr = filedata.find("""<tr>""")
             fin_tr = filedata.find("""</tr>""")
