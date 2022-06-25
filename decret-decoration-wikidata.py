@@ -381,7 +381,7 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
             prenom_principal = get_minuscules(full_principal)
         #print(f"prenom_principal : **{prenom_principal}**")
 
-        #mode très dégradé pour les arrêtés vers 2010
+        #mode très dégradé (pour les arrêtés vers 2010)
         if len(ligne) > 4:
             if ligne[0:4] == "<li>":
                 print("Vieil arrêté. Passage en mode très dégradé.") #jusqu'au dernier mot en majuscules
