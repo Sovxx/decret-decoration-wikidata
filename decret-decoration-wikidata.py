@@ -284,6 +284,9 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
     if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+7] == "Mme    ":
         if debug: print("titre = Mme")
         longueur_titre = 7
+    if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+8] == "M.&nbsp;":
+        if debug: print("titre = M.")
+        longueur_titre = 8
     if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+12] == "<li>Monsieur":
         if debug: print("titre = Monsieur")
         longueur_titre = 12
