@@ -4,6 +4,7 @@ Tool to import from the official list of awarded French national decorations to 
 ### Qu'est-ce que decret-decoration-wikidata ?
 decret-decoration-wikidata est un outil d'importation qui facilite le renseignement des décorations françaises (Légion d'honneur, Ordre national du Mérite, Ordre des Arts et des Lettres) sur Wikidata à partir du décret de nomination.
 
+### Comment ça marche ?
 Il permet d'afficher sur une copie locale du décret :
 * Les personnes existantes sur Wikidata qui sont susceptibles de correspondre aux personnes listées dans le décret.
 * Des boutons pour ajouter sur Wikidata (via QuickStatement) la décoration attribuée par le décret.
