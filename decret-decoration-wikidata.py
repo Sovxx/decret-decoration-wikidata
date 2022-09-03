@@ -6,7 +6,7 @@
 #python : supérieure ou égale à v3.6
 import requests
 #import json #nécessaire pour pprint (affichage des données JSON sur plusieurs lignes)
-import pprint #nécessaire pour pprint (affichage des données JSON sur plusieurs lignes)
+#import pprint #nécessaire pour pprint (affichage des données JSON sur plusieurs lignes)
 import re
 from datetime import datetime
 
@@ -83,18 +83,18 @@ def definition_date_decret_ISO_wiki(filedata):
         if debug: print(f"jour_decret = {jour_decret}")
         mois_decret = date_decret[date_decret.find(" ")+1:len(date_decret)-5]
         if debug: print(f"mois_decret = {mois_decret}")
-        if mois_decret == "janvier": date_decret_ISO = str(annee_decret) + "-01-" + str(jour_decret)
-        elif mois_decret == "février": date_decret_ISO = str(annee_decret) + "-02-" + str(jour_decret)
-        elif mois_decret == "mars": date_decret_ISO = str(annee_decret) + "-03-" + str(jour_decret)
-        elif mois_decret == "avril": date_decret_ISO = str(annee_decret) + "-04-" + str(jour_decret)
-        elif mois_decret == "mai": date_decret_ISO = str(annee_decret) + "-05-" + str(jour_decret)
-        elif mois_decret == "juin": date_decret_ISO = str(annee_decret) + "-06-" + str(jour_decret)
-        elif mois_decret == "juillet": date_decret_ISO = str(annee_decret) + "-07-" + str(jour_decret)
-        elif mois_decret == "août": date_decret_ISO = str(annee_decret) + "-08-" + str(jour_decret)
-        elif mois_decret == "septembre": date_decret_ISO = str(annee_decret) + "-09-" + str(jour_decret)
-        elif mois_decret == "octobre": date_decret_ISO = str(annee_decret) + "-10-" + str(jour_decret)
-        elif mois_decret == "novembre": date_decret_ISO = str(annee_decret) + "-11-" + str(jour_decret)
-        elif mois_decret == "décembre": date_decret_ISO = str(annee_decret) + "-12-" + str(jour_decret)
+        if mois_decret in {"janvier", "Janvier"}: date_decret_ISO = str(annee_decret) + "-01-" + str(jour_decret)
+        elif mois_decret in {"février", "Février"}: date_decret_ISO = str(annee_decret) + "-02-" + str(jour_decret)
+        elif mois_decret in {"mars", "Mars"}: date_decret_ISO = str(annee_decret) + "-03-" + str(jour_decret)
+        elif mois_decret in {"avril", "Avril"}: date_decret_ISO = str(annee_decret) + "-04-" + str(jour_decret)
+        elif mois_decret in {"mai", "Mai"}: date_decret_ISO = str(annee_decret) + "-05-" + str(jour_decret)
+        elif mois_decret in {"juin", "Juin"}: date_decret_ISO = str(annee_decret) + "-06-" + str(jour_decret)
+        elif mois_decret in {"juillet", "Juillet"}: date_decret_ISO = str(annee_decret) + "-07-" + str(jour_decret)
+        elif mois_decret in {"août", "Août"}: date_decret_ISO = str(annee_decret) + "-08-" + str(jour_decret)
+        elif mois_decret in {"septembre", "Septembre"}: date_decret_ISO = str(annee_decret) + "-09-" + str(jour_decret)
+        elif mois_decret in {"octobre", "Octobre"}: date_decret_ISO = str(annee_decret) + "-10-" + str(jour_decret)
+        elif mois_decret in {"novembre", "Novembre"}: date_decret_ISO = str(annee_decret) + "-11-" + str(jour_decret)
+        elif mois_decret in {"décembre", "Décembre"}: date_decret_ISO = str(annee_decret) + "-12-" + str(jour_decret)
         else: date_decret_ISO = "[format non reconnu]"
     if debug: print(f"date_decret_ISO = {date_decret_ISO}")
     print(f"Date du décret au format AAAA-MM-JJ ?   Par défaut (reconnu dans in.html) : {date_decret_ISO}")
@@ -126,7 +126,7 @@ def definition_ordre(filedata):
     print("Ordre ? LH, ONM ou AL (AL n'est pas encore fonctionnel) ?   Par défaut (reconnu dans in.html) :", ordre)
     ordre = input() or ordre
     print("ordre =", ordre)
-    if (ordre == "LH") or (ordre == "ONM") or (ordre == "AL"): return ordre
+    if ordre in {"LH", "ONM", "AL"}: return ordre
     raise SystemExit("Erreur : ordre doit être LH (Légion d'Honneur), ONM (Ordre National du Mérite) ou AL (Arts et Lettres)")
 
 def definition_boutons_simplifies():
@@ -183,7 +183,6 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
         personne_listee = get_nom(filedata,xxx,rang_personne,offset,ordre)
         liste_des_id = [] #juste pour éviter plusieurs fois le même id (Q wikidata) si trouvé pour différents alias
         for alias in personne_listee:
-            #print(f"{rang_personne} / {len(xxx)-1} : {personne_listee}")
             print(f"{rang_personne} / {len(xxx)-1} : *****{alias}*****")
             if debug: print("RECHERCHE DE LA PERSONNE SUR WIKIDATA...")
             params1 = {
@@ -220,7 +219,7 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
     return filedata
 
 def construction_index(filedata):
-    prefixes = ["M\. ", "Mme ","M\.\&nbsp\;", "Mme\&nbsp\;", "<li>Monsieur", "<li>Madame"]
+    prefixes = ["M\. ", "Mme ", "M.&nbsp;", "Mme&nbsp;", "<li>Monsieur", "<li>Madame"]
     xxx = [] #tableau des chaînes de caractères correspondante aux passages du décret concernant chaque personne
     for prefixe in prefixes:
         for m in re.finditer(prefixe, filedata):
@@ -240,11 +239,9 @@ def check_retour_a_la_ligne(filedata,xxx):
         if max(filedata[xxx[i]:xxx[i+1]].find("<br>"),filedata[xxx[i]:xxx[i+1]].find("<br/>"),filedata[xxx[i]:xxx[i+1]].find("<p"),filedata[xxx[i]:xxx[i+1]].find("</p>"),filedata[xxx[i]:xxx[i+1]].find("</li>")) == -1:
             print(f"position {xxx[i+1]} supprimée de l'index car pas de retour à la ligne")
             print(f"filedata[{xxx[i]}:{xxx[i+1]}+10]) : {filedata[xxx[i]:xxx[i+1]+10]}")
-            #xxx[i+1] = "ko"
             valeurs_a_suppr.append(xxx[i+1])
     if debug: print(f"valeurs_a_suppr : {valeurs_a_suppr}")
     if debug: print(f"xxx avant check_retour_a_la_ligne : {xxx}")
-    #xxx = [value for value in xxx if value != "ko"]
     xxx = [value for value in xxx if value not in valeurs_a_suppr]
     if debug: print(f"xxx après check_retour_a_la_ligne : {xxx}")
     print("==================================================")
@@ -269,6 +266,7 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
     personne_listee = []
     if debug: print(f"{xxx[rang_personne]} + {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+1000]}") #105412 : Mme Dupont, née Durant (Jeanne dite Jeannine, Marie, Hélène), dirigeante d'entrep
 
+    longueur_titre = 0
     if filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+4] == "Mme ":
         if debug: print("titre = Mme")
         longueur_titre = 4
@@ -298,7 +296,7 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
         longueur_titre = 10
     if debug: print(f"longueur_titre = {longueur_titre}")
 
-    if ordre == "LH" or ordre == "ONM":
+    if ordre in {"LH", "ONM"}:
         ouverture_parenthese = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+1000].find("(")
         fermeture_parenthese = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+1000].find(")")
         prenoms = filedata[xxx[rang_personne]+offset+ouverture_parenthese+1:xxx[rang_personne]+offset+fermeture_parenthese]
@@ -361,7 +359,8 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
     if ordre == "AL":
         ligne_hors_titre = ligne[longueur_titre:len(ligne)]
         #print(f"ligne_hors_titre : {ligne_hors_titre}")
-        ligne_hors_titre = clean_espaces(ligne_hors_titre)
+        #ligne_hors_titre = clean_espaces(ligne_hors_titre)    #remplacé par lstrip ci-dessous
+        ligne_hors_titre.lstrip()
         #print(f"ligne_hors_titre : {ligne_hors_titre}")
 
         full_principal, patronyme_principal, prenom_principal = -1, -1, -1
@@ -398,7 +397,7 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
 
         full_naissance, patronyme_naissance, prenom_naissance = -1, -1, -1
         full_naissance = trim_string(ligne_hors_titre," né","  ")
-        #print(f"full_naissance : {full_naissance}")
+        #print(f"full_naissance : *{full_naissance}*")
         if full_naissance != -1:
             if full_naissance[:4] != " né " and full_naissance[:5] != " née " and full_naissance[:7] != " né(e) ": full_naissance = -1
         if full_naissance != -1:
@@ -410,13 +409,10 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
             #print(f"patronyme_naissance : **{patronyme_naissance}**")
             prenom_naissance = get_minuscules(full_naissance)
             #print(f"prenom_naissance : **{prenom_naissance}**")
-            #print(f"full_naissance : {full_naissance}")
-            #print(f"patronyme_naissance : {patronyme_naissance}")
-            #print(f"prenom_naissance : {prenom_naissance}")
 
         full_pseudo, patronyme_pseudo, prenom_pseudo = -1, -1, -1
         full_pseudo = trim_string(ligne_hors_titre," dit","  ")
-        #print(f"full_pseudo : **{full_pseudo}**")
+        #print(f"full_pseudo : *{full_pseudo}*")
         if full_pseudo != -1:
             if full_pseudo[:5] != " dit " and full_pseudo[:6] != " dite ": full_pseudo = -1
         if full_pseudo != -1:
@@ -475,7 +471,6 @@ def get_majuscules(texte=""):
     if debutMAJmin == -1: debutMAJmin = 0 #pour faire -1 ci-dessous
     fins = [texte.find("  "), debutMAJmin-1, texte.find(" né"), texte.find(" dit")]
     fins = [fin for fin in fins if fin != -1] #list comprehension
-    #print(fins)
     if fins == []: return texte
     return texte[:min(fins)]
 
@@ -541,9 +536,9 @@ def get_description(data1,rang_personne_Q):
     return description
 
 def filtre_description(description):
-    if description == "Wikimedia disambiguation page": description = f"<font color=\"red\">Wikimedia disambiguation page</font>"
-    if description == "page d'homonymie d'un projet Wikimédia": description = f"<font color=\"red\">page d'homonymie d'un projet Wikimédia</font>"
-    return  description
+    if description == "Wikimedia disambiguation page": description = f"""<font color="red">Wikimedia disambiguation page</font>"""
+    if description == "page d'homonymie d'un projet Wikimédia": description = f"""<font color="red">page d'homonymie d'un projet Wikimédia</font>"""
+    return description
 
 def get_decorations(id):
     params2 = {
@@ -598,9 +593,9 @@ def get_date_naissance(id):
 
 def filtre_date_naissance(date_naissance,date_decret_ISO_wiki):
     if date_naissance == "": return ""
-    if int(date_naissance) < int(date_decret_ISO_wiki[1:5]) - 125: return f"<font color=\"red\">{date_naissance}</font>"
-    if int(date_naissance) > int(date_decret_ISO_wiki[1:5]) - 18: return f"<font color=\"red\">{date_naissance}</font>"
-    if int(date_naissance) > int(date_decret_ISO_wiki[1:5]) - 28: return f"<font color=\"orange\">{date_naissance}</font>"
+    if int(date_naissance) < int(date_decret_ISO_wiki[1:5]) - 125: return f"""<font color="red">{date_naissance}</font>"""
+    if int(date_naissance) > int(date_decret_ISO_wiki[1:5]) - 18: return f"""<font color="red">{date_naissance}</font>"""
+    if int(date_naissance) > int(date_decret_ISO_wiki[1:5]) - 28: return f"""<font color="orange">{date_naissance}</font>"""
     return date_naissance
 
 def get_date_deces(id):
@@ -620,13 +615,12 @@ def get_date_deces(id):
 
 def filtre_date_deces(date_deces,date_decret_ISO_wiki):
     if date_deces == "": return ""
-    if int(date_deces) < int(date_decret_ISO_wiki[1:5]) - 2: return f"<font color=\"red\">{date_deces}</font>"
-    if int(date_deces) < int(date_decret_ISO_wiki[1:5]): return f"<font color=\"orange\">{date_deces}</font>"
+    if int(date_deces) < int(date_decret_ISO_wiki[1:5]) - 2: return f"""<font color="red">{date_deces}</font>"""
+    if int(date_deces) < int(date_decret_ISO_wiki[1:5]): return f"""<font color="orange">{date_deces}</font>"""
     return date_deces
 
 def get_saut_suivant(filedata,xxx,rang_personne,offset):
     if debug: print(f"{xxx[rang_personne]} + (offset) {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}")
-    #recherche du saut suivant
     br_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br>")
     if br_suivant == -1: br_suivant = 10000
     brslash_suivant = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000].find("<br/>")
@@ -641,7 +635,6 @@ def get_saut_suivant(filedata,xxx,rang_personne,offset):
 
 def get_double_espace_suivant(filedata,xxx,rang_personne,offset,longueur_titre): #longueur_titre prise en compte
     if debug: print(f"{xxx[rang_personne]} + (offset) {offset} : {filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+5000]}")
-    #recherche du double espace suivant
     double_espace_suivant = filedata[xxx[rang_personne]+offset+longueur_titre:xxx[rang_personne]+offset+5000].find("  ")
     if double_espace_suivant == -1: double_espace_suivant = 10000
     if debug: print(f"double_espace_suivant : {double_espace_suivant}")
@@ -654,15 +647,15 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simpl
     if debug: print(f"injection_index = {injection_index}")
     if debug: print(f"(injection_index) {injection_index} : {filedata[injection_index:injection_index+1000]}")
     #ajout de la personne trouvée sur wikidata
-    injection_str = "<style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + str(rang_personne) + "/" + str(rang_personne_Q) + \
-        " : <b><a href=\"https://www.wikidata.org/wiki/" + id + "\">" + id + " : " + \
+    injection_str = """<style type="text/css"> form, table {display:inline;margin:0px;padding:0px;}</style><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;""" + str(rang_personne) + "/" + str(rang_personne_Q) + \
+        """ : <b><a href="https://www.wikidata.org/wiki/""" + id + """">""" + id + " : " + \
     label + " (" + date_naissance + "-" + date_deces + "), " + description + "</b></a>"
     #ajout des boutons pour QuickStatements
     if debug: print(f"injection_index avant recherche du grade en cours : {injection_index}")
     grade_en_cours = get_grade_en_cours(filedata[0:injection_index],ordre)
-    if boutons_simplifies == True:
+    if boutons_simplifies:
         QS_range_bouton_decoration = [grade_en_cours]
-    if boutons_simplifies == False:
+    else:
         if ordre == "LH": QS_range_bouton_decoration = [10,9,8,7,6]
         if ordre == "ONM": QS_range_bouton_decoration = [4,3,2,1,0]
         if ordre == "AL": QS_range_bouton_decoration = [14,13,12]
@@ -694,8 +687,8 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simpl
     if debug: print("fin injection")
     return filedata, offset
 
-def get_grade_en_cours(texte,ordre): # sert juste à mettre en gras le bouton concerné
-    if ordre == "LH": #[10,9,8,7,6]
+def get_grade_en_cours(texte,ordre): # sert uniquement à mettre en gras le bouton concerné
+    if ordre == "LH":
         rangs_precedents = {
             10 : max(texte.rfind("A la dignité de grand'croix"),texte.rfind("A la dignité de grand’croix")),
             9 : texte.rfind("A la dignité de grand officier"),
@@ -707,7 +700,7 @@ def get_grade_en_cours(texte,ordre): # sert juste à mettre en gras le bouton c
         max_key = max(rangs_precedents, key=rangs_precedents.get)
         if debug: print(max_key)
         return max_key
-    if ordre == "ONM": #[4,3,2,1,0]
+    if ordre == "ONM":
         rangs_precedents = {
             4 : max(texte.rfind("A la dignité de grand'croix"),texte.rfind("A la dignité de grand’croix")),
             3 : texte.rfind("A la dignité de grand officier"),
@@ -719,7 +712,7 @@ def get_grade_en_cours(texte,ordre): # sert juste à mettre en gras le bouton c
         max_key = max(rangs_precedents, key=rangs_precedents.get)
         if debug: print(max_key)
         return max_key
-    if ordre == "AL": #[14,13,12]
+    if ordre == "AL":
         rangs_precedents = {
             14 : texte.rfind("au grade de commandeur"),
             13 : max(texte.rfind("au grade d'officier"),texte.rfind("au grade d’officier")),
@@ -731,21 +724,21 @@ def get_grade_en_cours(texte,ordre): # sert juste à mettre en gras le bouton c
         return max_key
 
 def QS_ajout_script(filedata):
-    filedata = filedata[:filedata.find("</html>")] + "<script language=\"Javascript\"> \
+    filedata = filedata[:filedata.find("</html>")] + """<script language="Javascript"> \
         function QS_ajout_ligne(champ1,champ2,ID_bouton) { \
-            if (document.getElementById(ID_bouton).style.backgroundColor != \"green\") { \
-                var paragraph = document.getElementById(\"p\"); \
-                var text = document.createTextNode(champ1 + '\"' + champ2 + '\"'); \
+            if (document.getElementById(ID_bouton).style.backgroundColor != "green") { \
+                var paragraph = document.getElementById("p"); \
+                var text = document.createTextNode(champ1 + '"' + champ2 + '"'); \
                 paragraph.appendChild(text); \
-                var text = document.createElement(\"br\"); \
+                var text = document.createElement("br"); \
                 paragraph.appendChild(text); \
-                document.getElementById(ID_bouton).style.color = \"white\"; \
-                document.getElementById(ID_bouton).style.backgroundColor = \"green\"; \
+                document.getElementById(ID_bouton).style.color = "white"; \
+                document.getElementById(ID_bouton).style.backgroundColor = "green"; \
             } \
         } \
         </script> \
-        </p><b>Texte à utiliser dans <a href =\"https://quickstatements.toolforge.org/#/batch\">QuickStatements</a> pour exporter les nouvelles décorations dans Wikidata :</b> \
-        <p id=\"p\"></p>" + filedata[filedata.find("</html>"):]
+        </p><b>Texte à utiliser dans <a href ="https://quickstatements.toolforge.org/#/batch">QuickStatements</a> pour exporter les nouvelles décorations dans Wikidata :</b> \
+        <p id="p"></p>""" + filedata[filedata.find("</html>"):]
     return filedata
 
 def suppression_debut(filedata,ordre):
@@ -754,9 +747,8 @@ def suppression_debut(filedata,ordre):
     #supprime tout avant le "<p class="excerpt">"
     position_p = filedata.rfind("""<p class="excerpt">""")
     filedata = filedata[position_p:]
-
-    #supprime tout après le 1er "</div>" après "Bulletin officiel" (à la fin de l'arrêté)
-    position_bulletin = filedata.rfind("""Bulletin officiel""")
+    #supprime tout après le 1er "</div>" après Bulletin officiel" (à la fin de l'arrêté)
+    position_bulletin = filedata.rfind("Bulletin officiel")
     if position_bulletin != -1:
         position_div = filedata[position_bulletin:].find("""</div>""")
         filedata = filedata[:position_bulletin+position_div+6]
@@ -775,7 +767,7 @@ def suppression_debut(filedata,ordre):
 def suppression_p(filedata,ordre):
     #sans cette fonction, il y a un retour à la ligne non souhaité avant le 1er bouton de chaque grade
     xxxgrade = [] #tableau des chaînes de caractères correspondantes aux débuts de chaque grade
-    if ordre == "LH" or ordre == "ONM":
+    if ordre in {"LH", "ONM"}:
         for m in re.finditer("<b>Au grade d", filedata):
             xxxgrade.append(m.start())
         for m in re.finditer("<b>A la dignité de", filedata):
@@ -784,16 +776,13 @@ def suppression_p(filedata,ordre):
     if ordre == "AL":
         for m in re.finditer("<b>au grade d", filedata):
             xxxgrade.append(m.start())
-    #print(xxxgrade)
     if ordre == "AL":
         filedata = filedata.replace("""<p style="text-align:left;">""","<p>")
     offset = 0
     for paragraphe in xxxgrade:
         emplacement_p = filedata[paragraphe-offset:].find("<p>") #position dans l'extrait
         emplacement_p = emplacement_p + paragraphe - offset #position globale
-        #print(f"emplacement_p-5 : {filedata[emplacement_p-5:emplacement_p+30]}")
         filedata = filedata[:emplacement_p] + filedata[emplacement_p+3:]
-        #print(f"emplacement_p-5 : {filedata[emplacement_p-5:emplacement_p+30]}")
         offset = offset + 3
     return filedata
 
@@ -803,7 +792,6 @@ def cleanup_tr(filedata, ordre):
             debut_tr = filedata.find("""<tr>""")
             fin_tr = filedata.find("""</tr>""")
             filedata_partiel = filedata[debut_tr:fin_tr+5]
-            #print(f"filedata_partiel : {filedata_partiel}")
             if filedata_partiel.find("au grade d") == -1:
                 while filedata_partiel.find("<") != -1:
                     debut_balise = filedata_partiel.find("<")
@@ -818,7 +806,6 @@ def cleanup_tr(filedata, ordre):
             else: #dans le cas ou "grade" est entre des balises tr (ex : MCCA1604297A pour officier et chevalier), on laisse les autres balises (b, img...)
                 filedata_partiel = filedata_partiel.replace("""<tr>""","")
                 filedata_partiel = filedata_partiel.replace("""</tr>""","")
-            #print(f"filedata_partiel : {filedata_partiel}")
             filedata = filedata[:debut_tr] + filedata_partiel + "<br>" + filedata[fin_tr+5:]
         while filedata.find("""<table style="width:100%;">""") != -1: #passage supprimé sinon les boutons ne fonctionnent pas (bizarrement)
             filedata = filedata[:filedata.find("""<table style="width:100%;">""")] + filedata[filedata.find("""<table style="width:100%;">""")+27:]
@@ -826,12 +813,12 @@ def cleanup_tr(filedata, ordre):
 
 def main():
 
-    print("OUVERTURE DU FICHIER \"in.html\"...")
+    print("""OUVERTURE DU FICHIER "in.html"...""")
     try:
         with open("in.html", 'r') as file:
             filedata = file.read()
     except IOError:
-        raise SystemExit("Erreur: Enregistrez une page de décret depuis Légifrance sous le nom \"in.html\" dans le dossier du programme.")
+        raise SystemExit("""Erreur: Enregistrez une page de décret depuis Légifrance sous le nom "in.html" dans le dossier du programme.""")
 
     print("RECHERCHE DES INFOS DE BASE DU DECRET...")
     NOR = definition_NOR(filedata)
@@ -856,12 +843,12 @@ def main():
     print("AJOUT DU CHAMP QUICKSTATEMENTS A LA FIN DU FICHIER...")
     filedata = QS_ajout_script(filedata)
 
-    print("ENREGISTREMENT DU FICHIER \"out.html\"...")
+    print("""ENREGISTREMENT DU FICHIER "out.html"...""")
     with open("out.html", 'w') as file:
         file.write(filedata)
 
     print("==================================================")
-    print("TRAITEMENT TERMINE. OUVREZ LE FICHIER \"out.html\".")
+    print("""TRAITEMENT TERMINE. OUVREZ LE FICHIER "out.html".""")
 
 if __name__ == "__main__":
     main()
