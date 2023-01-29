@@ -737,7 +737,7 @@ def QS_ajout_script(filedata):
             } \
         } \
         </script> \
-        </p><b>Texte à utiliser dans <a href ="https://quickstatements.toolforge.org/#/batch">QuickStatements</a> pour exporter les nouvelles décorations dans Wikidata :</b> \
+        </p><b>Texte à utiliser dans <a href ="https://quickstatements.toolforge.org/#/batch" target="_blank">QuickStatements</a> pour exporter les nouvelles décorations dans Wikidata :</b> \
         <p id="p"></p>""" + filedata[filedata.find("</html>"):]
     return filedata
 
