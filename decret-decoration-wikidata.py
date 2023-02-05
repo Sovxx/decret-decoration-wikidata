@@ -648,7 +648,7 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simpl
     if debug: print(f"(injection_index) {injection_index} : {filedata[injection_index:injection_index+1000]}")
     #ajout de la personne trouvée sur wikidata
     injection_str = """<style type="text/css"> form, table {display:inline;margin:0px;padding:0px;}</style><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;""" + str(rang_personne) + "/" + str(rang_personne_Q) + \
-        """ : <b><a href="https://www.wikidata.org/wiki/""" + id + """">""" + id + " : " + \
+        """ : <b><a href="https://www.wikidata.org/wiki/""" + id + """" target="_blank">""" + id + " : " + \
     label + " (" + date_naissance + "-" + date_deces + "), " + description + "</b></a>"
     #ajout des boutons pour QuickStatements
     if debug: print(f"injection_index avant recherche du grade en cours : {injection_index}")
@@ -674,7 +674,7 @@ def injection_personne(filedata,xxx,NOR,date_decret_ISO_wiki,ordre,boutons_simpl
     #ajout des éventuelles décorations existantes
     for k in [10,9,8,7,6,11,4,3,2,1,0,5,14,13,12,15]: #pour affichage des plus hautes décorations en premier
         if decoration_obtenue[k] == 1:
-            injection_str = injection_str + "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src=\"" + decoration_img[k] + "\" width=\"50\"> &nbsp;" + "<a href=\"https://www.wikidata.org/wiki/" + id + "#P166\">" + decoration_nom[k] + "</a>"
+            injection_str = injection_str + "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src=\"" + decoration_img[k] + "\" width=\"50\"> &nbsp;" + "<a href=\"https://www.wikidata.org/wiki/" + id + "#P166\"target=\"_blank\">" + decoration_nom[k] + "</a>"
             if decoration_date[k] != 0:
                 date_ISO_reformatee = decoration_date[k][1:] # pour passer de +2008-09-12T00:00:00Z à 2008-09-12T00:00:00Z
                 date_ISO_reformatee = date_ISO_reformatee[:10] # pour passer de 2008-09-12T00:00:00 à 2008-09-12
