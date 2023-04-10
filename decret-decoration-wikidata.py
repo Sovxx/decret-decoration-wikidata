@@ -123,7 +123,7 @@ def definition_ordre(filedata):
         if filedata.find("sont élevés dans l'ordre national du Mérite") != -1: ordre = "ONM"
         if filedata.find("est élevé dans l'ordre national du Mérite") != -1: ordre = "ONM"
     if filedata.find("dans l'ordre des Arts et des Lettres") != -1: ordre = "AL"
-    print("Ordre ? LH, ONM ou AL (AL n'est pas encore fonctionnel) ?   Par défaut (reconnu dans in.html) :", ordre)
+    print("Ordre ? LH, ONM ou AL (AL fonctionne mal pour certains anciens décrets) ?   Par défaut (reconnu dans in.html) :", ordre)
     ordre = input() or ordre
     print("ordre =", ordre)
     if ordre in {"LH", "ONM", "AL"}: return ordre
