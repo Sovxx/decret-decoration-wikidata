@@ -10,6 +10,9 @@ import requests
 import re
 from datetime import datetime
 
+from fonctions_basiques import *
+from variables import *
+
 debug = False
 
 url = "https://www.wikidata.org/w/api.php"
@@ -17,7 +20,7 @@ url = "https://www.wikidata.org/w/api.php"
 decoration_nom = ["Chevalier ONM", "Officier ONM", "Commandeur ONM", "Grand Officier ONM", "Grand'Croix ONM", "ONM", \
     "Chevalier LH", "Officier LH", "Commandeur LH", "Grand Officier LH", "Grand'Croix LH", "LH", \
     "Chevalier AL", "Officier AL", "Commandeur AL", "AL"]
-decoration_total = len(decoration_nom)
+decoration_total = len(decorations)
 decoration_Q = ["Q13422138", "Q13422140", "Q13422141", "Q13422142", "Q13422143", "Q652962", \
     "Q10855271", "Q10855195", "Q10855212", "Q10855216", "Q10855226", "Q163700", \
     "Q13452528", "Q13452524", "Q13452531", "Q716909"]
@@ -38,6 +41,11 @@ decoration_img = ["https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Ord
     "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/Ordre_des_Arts_et_des_Lettres_Commandeur_ribbon.svg/218px-Ordre_des_Arts_et_des_Lettres_Commandeur_ribbon.svg.png", \
     "https://upload.wikimedia.org/wikipedia/commons/9/9c/Chevalier_arts_et_lettres.jpg"]
 
+
+# personne (du decret)
+# attribuer Q(s)
+# ajouter decoration(s) et date
+
 def definition_NOR(filedata):
     NOR = ""
     if filedata.find("NOR  :") != -1:
@@ -51,17 +59,6 @@ def definition_NOR(filedata):
     NOR = input() or NOR
     print(f"NOR = {NOR}")
     return NOR
-
-def check_date(date_a_checker):
-    if len(date_a_checker) != 10: return "date KO ; len != 10"
-    try:
-        if int(date_a_checker[0:4]) < 1800: return "date KO ; AAAA < 1800"
-        if int(date_a_checker[0:4]) > 2100: return "date KO ; AAAA > 2100"
-        if int(date_a_checker[5:7]) < 1: return "date KO ; mois non valide"
-        if int(date_a_checker[5:7]) > 12: return "date KO ; mois non valide"
-    except (ValueError,TypeError):
-        return "date KO ; erreur de type"
-    return "date valide"
 
 def definition_date_decret_ISO_wiki(filedata):
     date_decret = "[non trouvé]"
@@ -126,7 +123,7 @@ def definition_ordre(filedata):
     print("Ordre ? LH, ONM ou AL (AL fonctionne mal pour certains anciens décrets) ?   Par défaut (reconnu dans in.html) :", ordre)
     ordre = input() or ordre
     print("ordre =", ordre)
-    if ordre in {"LH", "ONM", "AL"}: return ordre
+    if ordre in ordres: return ordre
     raise SystemExit("Erreur : ordre doit être LH (Légion d'Honneur), ONM (Ordre National du Mérite) ou AL (Arts et Lettres)")
 
 def definition_boutons_simplifies():
@@ -142,43 +139,43 @@ def definition_boutons_simplifies():
 
 def mise_en_forme_titres(filedata, ordre):
     if ordre == "ONM":
-        filedata = filedata.replace("Au grade de chevalier", "<b>Au grade de chevalier</b> <img src=\"" + decoration_img[0] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("Au grade d'officier", "<b>Au grade d'officier</b> <img src=\"" + decoration_img[1] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("Au grade d’officier", "<b>Au grade d’officier</b> <img src=\"" + decoration_img[1] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
-        filedata = filedata.replace("Au grade de commandeur", "<b>Au grade de commandeur</b> <img src=\"" + decoration_img[2] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("A la dignité de grand officier", "<b>A la dignité de grand officier</b> <img src=\"" + decoration_img[3] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("A la dignité de grand'croix", "<b>A la dignité de grand'croix</b> <img src=\"" + decoration_img[4] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("A la dignité de grand’croix", "<b>A la dignité de grand’croix</b> <img src=\"" + decoration_img[4] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("A la dignité de grand'croix", "<b>A la dignité de grand'croix</b> <img src=\"" + img_par_grade_et_ordre(1, "ONM") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("A la dignité de grand’croix", "<b>A la dignité de grand’croix</b> <img src=\"" + img_par_grade_et_ordre(1, "ONM") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("A la dignité de grand officier", "<b>A la dignité de grand officier</b> <img src=\"" + img_par_grade_et_ordre(2, "ONM") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade de commandeur", "<b>Au grade de commandeur</b> <img src=\"" + img_par_grade_et_ordre(3, "ONM") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade d'officier", "<b>Au grade d'officier</b> <img src=\"" + img_par_grade_et_ordre(4, "ONM") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade d’officier", "<b>Au grade d’officier</b> <img src=\"" + img_par_grade_et_ordre(4, "ONM") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("Au grade de chevalier", "<b>Au grade de chevalier</b> <img src=\"" + img_par_grade_et_ordre(5, "ONM") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
     if ordre == "LH":
-        filedata = filedata.replace("Au grade de chevalier", "<b>Au grade de chevalier</b> <img src=\"" + decoration_img[6] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("Au grade d'officier", "<b>Au grade d'officier</b> <img src=\"" + decoration_img[7] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("Au grade d’officier", "<b>Au grade d’officier</b> <img src=\"" + decoration_img[7] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
-        filedata = filedata.replace("Au grade de commandeur", "<b>Au grade de commandeur</b> <img src=\"" + decoration_img[8] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("A la dignité de grand officier", "<b>A la dignité de grand officier</b> <img src=\"" + decoration_img[9] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("A la dignité de grand'croix", "<b>A la dignité de grand'croix</b> <img src=\"" + decoration_img[10] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("A la dignité de grand’croix", "<b>A la dignité de grand’croix</b> <img src=\"" + decoration_img[10] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("A la dignité de grand'croix", "<b>A la dignité de grand'croix</b> <img src=\"" + img_par_grade_et_ordre(1, "LH") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("A la dignité de grand’croix", "<b>A la dignité de grand’croix</b> <img src=\"" + img_par_grade_et_ordre(1, "LH") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("Au grade de commandeur", "<b>Au grade de commandeur</b> <img src=\"" + img_par_grade_et_ordre(3, "LH") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("A la dignité de grand officier", "<b>A la dignité de grand officier</b> <img src=\"" + img_par_grade_et_ordre(2, "LH") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade d'officier", "<b>Au grade d'officier</b> <img src=\"" + img_par_grade_et_ordre(4, "LH") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("Au grade d’officier", "<b>Au grade d’officier</b> <img src=\"" + img_par_grade_et_ordre(4, "LH") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("Au grade de chevalier", "<b>Au grade de chevalier</b> <img src=\"" + img_par_grade_et_ordre(5, "LH") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
     if ordre == "AL":
-        filedata = filedata.replace("au grade de commandeur de l'ordre des Arts et des Lettres", "<b>au grade de commandeur de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade de commandeur de l’ordre des Arts et des Lettres", "<b>au grade de commandeur de l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
-        filedata = filedata.replace("au grade de commandeur dans l'ordre des Arts et des Lettres", "<b>au grade de commandeur dans l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade de commandeur dans l’ordre des Arts et des Lettres", "<b>au grade de commandeur dans l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade de commandeure ou commandeur de l'ordre des Arts et des Lettres", "<b>au grade de commandeure ou commandeur de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade de commandeure ou commandeur de l’ordre des Arts et des Lettres", "<b>au grade de commandeure ou commandeur de l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[14] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
-        filedata = filedata.replace("au grade d'officier de l'ordre des Arts et des Lettres", "<b>au grade d'officier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade d'officier de l’ordre des Arts et des Lettres", "<b>au grade d'officier de l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
-        filedata = filedata.replace("au grade d’officier de l’ordre des Arts et des Lettres", "<b>au grade d’officier de l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
-        filedata = filedata.replace("au grade d'officier dans l'ordre des Arts et des Lettres", "<b>au grade d'officier dans l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade d’officier dans l’ordre des Arts et des Lettres", "<b>au grade d’officier dans l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
-        filedata = filedata.replace("au grade d'officière ou d'officier de l'ordre des Arts et des Lettres", "<b>au grade d'officière ou d'officier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade d’officière ou d’officier de l’ordre des Arts et des Lettres", "<b>au grade d’officière ou d’officier de l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[13] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
-        filedata = filedata.replace("au grade de chevalier de l'ordre des Arts et des Lettres", "<b>au grade de chevalier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade de chevalier de l’ordre des Arts et des Lettres", "<b>au grade de chevalier de l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
-        filedata = filedata.replace("au grade de chevalier dans l'ordre des Arts et des Lettres", "<b>au grade de chevalier dans l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade de chevalier dans l’ordre des Arts et des Lettres", "<b>au grade de chevalier dans l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade de chevalière ou chevalier de l'ordre des Arts et des Lettres", "<b>au grade de chevalière ou chevalier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade de chevalière ou&nbsp;chevalier de l'ordre des Arts et des Lettres", "<b>au grade de chevalière ou chevalier de l'ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
-        filedata = filedata.replace("au grade de chevalière ou chevalier de l’ordre des Arts et des Lettres", "<b>au grade de chevalière ou chevalier de l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
-        filedata = filedata.replace("au grade de chevalière ou&nbsp;chevalier de l’ordre des Arts et des Lettres", "<b>au grade de chevalière ou chevalier de l’ordre des Arts et des Lettres</b> <img src=\"" + decoration_img[12] + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade de commandeur de l'ordre des Arts et des Lettres", "<b>au grade de commandeur de l'ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(1, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade de commandeur de l’ordre des Arts et des Lettres", "<b>au grade de commandeur de l’ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(1, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade de commandeur dans l'ordre des Arts et des Lettres", "<b>au grade de commandeur dans l'ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(1, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade de commandeur dans l’ordre des Arts et des Lettres", "<b>au grade de commandeur dans l’ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(1, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade de commandeure ou commandeur de l'ordre des Arts et des Lettres", "<b>au grade de commandeure ou commandeur de l'ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(1, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade de commandeure ou commandeur de l’ordre des Arts et des Lettres", "<b>au grade de commandeure ou commandeur de l’ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(1, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade d'officier de l'ordre des Arts et des Lettres", "<b>au grade d'officier de l'ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(2, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade d'officier de l’ordre des Arts et des Lettres", "<b>au grade d'officier de l’ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(2, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade d’officier de l’ordre des Arts et des Lettres", "<b>au grade d’officier de l’ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(2, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade d'officier dans l'ordre des Arts et des Lettres", "<b>au grade d'officier dans l'ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(2, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade d’officier dans l’ordre des Arts et des Lettres", "<b>au grade d’officier dans l’ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(2, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade d'officière ou d'officier de l'ordre des Arts et des Lettres", "<b>au grade d'officière ou d'officier de l'ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(2, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade d’officière ou d’officier de l’ordre des Arts et des Lettres", "<b>au grade d’officière ou d’officier de l’ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(2, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade de chevalier de l'ordre des Arts et des Lettres", "<b>au grade de chevalier de l'ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(3, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade de chevalier de l’ordre des Arts et des Lettres", "<b>au grade de chevalier de l’ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(3, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade de chevalier dans l'ordre des Arts et des Lettres", "<b>au grade de chevalier dans l'ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(3, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade de chevalier dans l’ordre des Arts et des Lettres", "<b>au grade de chevalier dans l’ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(3, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade de chevalière ou chevalier de l'ordre des Arts et des Lettres", "<b>au grade de chevalière ou chevalier de l'ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(3, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade de chevalière ou&nbsp;chevalier de l'ordre des Arts et des Lettres", "<b>au grade de chevalière ou chevalier de l'ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(3, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>")
+        filedata = filedata.replace("au grade de chevalière ou chevalier de l’ordre des Arts et des Lettres", "<b>au grade de chevalière ou chevalier de l’ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(3, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
+        filedata = filedata.replace("au grade de chevalière ou&nbsp;chevalier de l’ordre des Arts et des Lettres", "<b>au grade de chevalière ou chevalier de l’ordre des Arts et des Lettres</b> <img src=\"" + img_par_grade_et_ordre(3, "AL") + "\" width=\"150\"><style type=\"text/css\"> form, table {display:inline;margin:0px;padding:0px;}</style>") # apostrophe différente de celle de la ligne du dessus !
     return filedata
 
 def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
@@ -240,7 +237,7 @@ def construction_index(filedata):
     xxx = check_retour_a_la_ligne(filedata,xxx)
     return xxx
 
-def check_retour_a_la_ligne(filedata,xxx):
+def check_retour_a_la_ligne(filedata, xxx):
     valeurs_a_suppr = []
     for i in range(len(xxx)-1):
         if debug: print(f"Vérification couple {i}/{i+1} : {xxx[i]}/{xxx[i+1]}")
@@ -255,7 +252,7 @@ def check_retour_a_la_ligne(filedata,xxx):
     print("==================================================")
     return xxx
 
-def get_nom(filedata,xxx,rang_personne,offset,ordre):
+def get_nom(filedata, xxx, rang_personne, offset,ordre):
 
     #remplacement des &nbsp; dans la ligne
     ligne = filedata[xxx[rang_personne]+offset:xxx[rang_personne]+offset+get_saut_suivant(filedata,xxx,rang_personne,offset)]
@@ -456,68 +453,7 @@ def get_nom(filedata,xxx,rang_personne,offset,ordre):
 
     return personne_listee
 
-def trim_string(texte="", texte_debut="", texte_fin=""):
-    position_debut = texte.find(texte_debut)
-    if position_debut == -1: return -1
-    position_fin = texte[position_debut+len(texte_debut)+1:].find(texte_fin)
-    if position_fin == -1 or position_fin == 0:
-        position_fin = len(texte)
-    else:
-        position_fin = position_debut+len(texte_debut)+1 + position_fin
-    return texte[position_debut:position_fin]
-
-def get_majuscules(texte=""):
-    # retourne les mots précédents le 1er double espace, MAJmin, né ou dit
-    if texte == "": return -1
-    debutMAJmin = 0
-    while not (texte[debutMAJmin:debutMAJmin+1].isupper() and texte[debutMAJmin+1:debutMAJmin+2].islower()):
-        debutMAJmin += 1
-        if debutMAJmin == len(texte) - 1:
-            debutMAJmin = -1
-            break
-    if debutMAJmin == 0: return -1
-    if debutMAJmin == -1: debutMAJmin = 0 #pour faire -1 ci-dessous
-    fins = [texte.find("  "), debutMAJmin-1, texte.find(" né"), texte.find(" dit")]
-    fins = [fin for fin in fins if fin != -1] #list comprehension
-    if fins == []: return texte
-    return texte[:min(fins)]
-
-def get_position_fin_majuscules(texte=""):
-    # retourne la position juste après la fin du dernier mot tout en majuscules
-    if len(texte) < 2: return -1
-    fins = [position for position in range(1,len(texte)) if (texte[position].isupper() and texte[position-1].isupper())] #list comprehension
-    if len(fins) == 0: return -1
-    return max(fins)+1
-
-def get_minuscules(texte=""):
-    # retourne les mots à partir du 1er mot avec 1 majuscule puis une minuscule
-    if texte == "": return -1
-    debutMAJmin = 0
-    while not (texte[debutMAJmin:debutMAJmin+1].isupper() and texte[debutMAJmin+1:debutMAJmin+2].islower()):
-        debutMAJmin += 1
-        if debutMAJmin == len(texte) - 1: return -1
-    return texte[debutMAJmin:]
-
-def clean_espaces(texte=""):
-    #retire les espaces éventuels au début
-    if type(texte) != str : return -1
-    if texte == "" : return ""
-    fin_espace = 0
-    while texte[fin_espace:fin_espace+1] == " ":
-        fin_espace += 1
-        if fin_espace == len(texte) + 1: return ""
-    return texte[fin_espace:]
-
-def clean_dit_ne(texte=""):
-    #retire les dit ou né et ce qui suit
-    if type(texte) != str : return -1
-    if texte.find(" dit") != -1:
-        texte = texte[:texte.find(" dit")]
-    if texte.find(" né") != -1:
-        texte = texte[:texte.find(" né")]
-    return texte
-
-def get_id(data1,rang_personne_Q):
+def get_id(data1, rang_personne_Q):
     try:
         id = data1.json()["search"][rang_personne_Q]["id"]
     except KeyError:
@@ -527,7 +463,7 @@ def get_id(data1,rang_personne_Q):
     if debug: print(f"id = {id}")
     return id
 
-def get_label(data1,rang_personne_Q):
+def get_label(data1, rang_personne_Q):
     try:
         label = data1.json()["search"][rang_personne_Q]["label"]
     except (KeyError, IndexError):
@@ -535,7 +471,7 @@ def get_label(data1,rang_personne_Q):
     if debug: print(f"label = {label}")
     return label
 
-def get_description(data1,rang_personne_Q):
+def get_description(data1, rang_personne_Q):
     try:
         description = data1.json()["search"][rang_personne_Q]["description"]
     except (KeyError, IndexError):
@@ -562,13 +498,13 @@ def get_decorations(id):
         award_received_total = 0
     if debug: print(f"award_received_total = {award_received_total}")
     decoration = 0 # pour balayer les différentes décorations (listées ci-dessous) possibles
-    decoration_obtenue = [0] * decoration_total
-    decoration_date = [0] * decoration_total
+    decoration_obtenue = [0] * len(decorations)
+    decoration_date = [0] * len(decorations)
     if award_received_total > 0:
         award_received = 0 # pour balayer les différents P166 de la personne
         while award_received < award_received_total:
             decoration = 0
-            while decoration < decoration_total:
+            while decoration < len(decorations):
                 if data2.json()["claims"]["P166"][award_received]["mainsnak"]["datavalue"]["value"]["id"] == decoration_Q[decoration]:
                     decoration_obtenue[decoration] = 1
                     if "qualifiers" in data2.json()["claims"]["P166"][award_received]:
@@ -599,7 +535,7 @@ def get_date_naissance(id):
     if debug: print(f"date_naissance = {date_naissance}")
     return date_naissance
 
-def filtre_date_naissance(date_naissance,date_decret_ISO_wiki):
+def filtre_date_naissance(date_naissance, date_decret_ISO_wiki):
     if date_naissance == "": return ""
     if int(date_naissance) < int(date_decret_ISO_wiki[1:5]) - 125: return f"""<font color="red">{date_naissance}</font>"""
     if int(date_naissance) > int(date_decret_ISO_wiki[1:5]) - 18: return f"""<font color="red">{date_naissance}</font>"""
@@ -621,7 +557,7 @@ def get_date_deces(id):
     if debug: print(f"date_deces = {date_deces}")
     return date_deces
 
-def filtre_date_deces(date_deces,date_decret_ISO_wiki):
+def filtre_date_deces(date_deces, date_decret_ISO_wiki):
     if date_deces == "": return ""
     if int(date_deces) < int(date_decret_ISO_wiki[1:5]) - 2: return f"""<font color="red">{date_deces}</font>"""
     if int(date_deces) < int(date_decret_ISO_wiki[1:5]): return f"""<font color="orange">{date_deces}</font>"""
