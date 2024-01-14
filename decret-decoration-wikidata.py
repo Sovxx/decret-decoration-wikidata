@@ -20,7 +20,6 @@ url = "https://www.wikidata.org/w/api.php"
 decoration_nom = ["Chevalier ONM", "Officier ONM", "Commandeur ONM", "Grand Officier ONM", "Grand'Croix ONM", "ONM", \
     "Chevalier LH", "Officier LH", "Commandeur LH", "Grand Officier LH", "Grand'Croix LH", "LH", \
     "Chevalier AL", "Officier AL", "Commandeur AL", "AL"]
-decoration_total = len(decorations)
 decoration_Q = ["Q13422138", "Q13422140", "Q13422141", "Q13422142", "Q13422143", "Q652962", \
     "Q10855271", "Q10855195", "Q10855212", "Q10855216", "Q10855226", "Q163700", \
     "Q13452528", "Q13452524", "Q13452531", "Q716909"]
@@ -42,9 +41,46 @@ decoration_img = ["https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Ord
     "https://upload.wikimedia.org/wikipedia/commons/9/9c/Chevalier_arts_et_lettres.jpg"]
 
 
-# personne (du decret)
-# attribuer Q(s)
-# ajouter decoration(s) et date
+
+class Identifiant():
+    pass
+
+class Nom_de_naissance(Identifiant):
+
+class Nom_complet(Identifiant):
+
+class Prenom(Identifiant):
+
+class Prenoms(Identifiant):
+
+class Prenom_d_usage(Identifiant):
+        
+
+class Decoration:
+    def __init__(self, nom, grade, ordre, Q, img):
+        self.nom = nom
+        self.grade = grade
+        self.ordre = ordre
+        self.Q = Q
+        self.img = img
+liste_decorations = [Decoration(**deco) for deco in decorations]
+
+class Attribution():
+       def __init__(self, decoration, date):
+        self.decoration = decoration
+        self.date = date
+    
+class Personne():
+    def __init__(self):
+
+        self.Qs = []
+        self.decos_passees = []
+    
+    def ajouter_Q(self, Q):
+        self.Qs.append(Q)
+
+    def ajouter_deco_passee(self, Decoration, date):
+        self.decos_passees.append()
 
 def definition_NOR(filedata):
     NOR = ""
