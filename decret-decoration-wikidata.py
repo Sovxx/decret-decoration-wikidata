@@ -230,7 +230,7 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
     return filedata
 
 def construction_index(filedata):
-    prefixes = ["M\. ", "Mme ", "M.&nbsp;", "Mme&nbsp;", "<li>Monsieur", "<li>Madame"]
+    prefixes = ["M\. ", "Mme ", "M.&nbsp;", "Mme&nbsp;", "<li>Monsieur", "<li>Madame", "Mlle "]
     xxx = [] #tableau des chaînes de caractères correspondante aux passages du décret concernant chaque personne
     for prefixe in prefixes:
         for m in re.finditer(prefixe, filedata):
