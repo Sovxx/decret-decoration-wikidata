@@ -329,12 +329,24 @@ def get_nom(filedata, xxx, rang_personne, offset, ordre):
 # Wikidata
 # ---------------------------------------------------------------------------
 
+'''
 def get_id(data1, rang_personne_Q):
     try:
         return data1.json()["search"][rang_personne_Q]["id"]
     except (KeyError, IndexError):
         return "KO"
+'''
 
+def get_id(data1, rang_personne_Q):
+    try:
+        data = data1.json()
+    except Exception:
+        print("Erreur JSON")
+        print("Code HTTP :", data1.status_code)
+        print(data1.text[:1000])
+        return None
+
+    return data["search"][rang_personne_Q]["id"]
 
 def get_label(data1, rang_personne_Q):
     try:
@@ -533,13 +545,19 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
 
         for alias in personne_listee:
             print(f"{rang_personne} / {len(xxx)-1} : *****{alias}*****")
+            HEADERS = {
+                "User-Agent": (
+                    "decret-decoration-wikidata/1.0 "
+                    "(https://github.com/Sovxx/decret-decoration-wikidata; "
+                )
+            }
             params1 = {
                 "action": "wbsearchentities",
                 "language": "fr",
                 "format": "json",
                 "search": alias
             }
-            data1 = requests.get(url, params=params1)
+            data1 = requests.get(url, headers=HEADERS, params=params1)
             rang_personne_Q = 0
             id = ""
             while id != "KO":
