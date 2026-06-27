@@ -14,6 +14,13 @@ debug = False
 
 url = "https://www.wikidata.org/w/api.php"
 
+HEADERS = {
+    "User-Agent": (
+        "decret-decoration-wikidata/1.0 "
+        "(https://github.com/Sovxx/decret-decoration-wikidata; "
+    )
+}
+
 decoration_nom = ["Chevalier ONM", "Officier ONM", "Commandeur ONM", "Grand Officier ONM", "Grand'Croix ONM", "ONM", \
                   "Chevalier LH",  "Officier LH",  "Commandeur LH",  "Grand Officier LH",  "Grand'Croix LH",  "LH"]
 
@@ -376,7 +383,7 @@ def get_decorations(id):
         "entity": id,
         "property": "P166"
     }
-    data2 = requests.get(url, params=params2)
+    data2 = requests.get(url, headers=HEADERS, params=params2)
     try:
         award_received_total = len(data2.json()["claims"]["P166"])
     except KeyError:
@@ -405,7 +412,7 @@ def get_decorations(id):
 
 def get_date_naissance(id):
     params3 = {"action": "wbgetclaims", "format": "json", "entity": id, "property": "P569"}
-    data3 = requests.get(url, params=params3)
+    data3 = requests.get(url, headers=HEADERS, params=params3)
     try:
         return data3.json()["claims"]["P569"][0]["mainsnak"]["datavalue"]["value"]["time"][1:5]
     except KeyError:
@@ -424,7 +431,7 @@ def filtre_date_naissance(date_naissance, date_decret_ISO_wiki):
 
 def get_date_deces(id):
     params4 = {"action": "wbgetclaims", "format": "json", "entity": id, "property": "P570"}
-    data4 = requests.get(url, params=params4)
+    data4 = requests.get(url, headers=HEADERS, params=params4)
     try:
         return data4.json()["claims"]["P570"][0]["mainsnak"]["datavalue"]["value"]["time"][1:5]
     except KeyError:
@@ -545,12 +552,6 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
 
         for alias in personne_listee:
             print(f"{rang_personne} / {len(xxx)-1} : *****{alias}*****")
-            HEADERS = {
-                "User-Agent": (
-                    "decret-decoration-wikidata/1.0 "
-                    "(https://github.com/Sovxx/decret-decoration-wikidata; "
-                )
-            }
             params1 = {
                 "action": "wbsearchentities",
                 "language": "fr",
