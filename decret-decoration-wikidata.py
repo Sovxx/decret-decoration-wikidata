@@ -9,10 +9,13 @@
 
 import requests
 import re
+import time
 
 debug = False
 
 url = "https://www.wikidata.org/w/api.php"
+
+STEP_SECONDES = 1
 
 HEADERS = {
     "User-Agent": (
@@ -571,9 +574,11 @@ def traitement(filedata, NOR, date_decret_ISO_wiki, ordre, boutons_simplifies):
                         decoration_obtenue, decoration_date
                     )
                     liste_des_id.append(id)
+                time.sleep(STEP_SECONDES)
                 rang_personne_Q += 1
 
         print("-------------------------------")
+        time.sleep(STEP_SECONDES)
         rang_personne += 1
 
     return filedata
