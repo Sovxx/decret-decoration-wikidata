@@ -336,24 +336,16 @@ def get_nom(filedata, xxx, rang_personne, offset, ordre):
 # Wikidata
 # ---------------------------------------------------------------------------
 
-'''
-def get_id(data1, rang_personne_Q):
+def get_id(data1,rang_personne_Q):
     try:
-        return data1.json()["search"][rang_personne_Q]["id"]
-    except (KeyError, IndexError):
-        return "KO"
-'''
+        id = data1.json()["search"][rang_personne_Q]["id"]
+    except KeyError:
+        id = "KO"
+    except IndexError:
+        id = "KO"
+    if debug: print(f"id = {id}")
+    return id
 
-def get_id(data1, rang_personne_Q):
-    try:
-        data = data1.json()
-    except Exception:
-        print("Erreur JSON")
-        print("Code HTTP :", data1.status_code)
-        print(data1.text[:1000])
-        return None
-
-    return data["search"][rang_personne_Q]["id"]
 
 def get_label(data1, rang_personne_Q):
     try:
